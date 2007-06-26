@@ -5,25 +5,25 @@
 \usepackage{caratula}														% Caratula de Algo2
 %\usepackage[a4paper=true,pagebackref=true]{hyperref}				% Agrega la TOC al PDF e hipervinculos
 %\usepackage[pdftex]{graphicx} 											% Permite insertar graficos
-\usepackage{fancyhdr}														% Permite manejo de cabeceras de pagina
+%\usepackage{fancyhdr}														% Permite manejo de cabeceras de pagina
 \usepackage{eufrak}															% Usado en el enunciado del trabajo
 \usepackage{latexsym}
-\usepackage{algorithmic}													% Para escribir los algos
-\usepackage{dsfont}															% Para el simbolo de naturales
-\usepackage[font=small,labelfont=bf]{caption}						% Para editar las captions
+%\usepackage{algorithmic}													% Para escribir los algos
+%\usepackage{dsfont}															% Para el simbolo de naturales
+%\usepackage[font=small,labelfont=bf]{caption}						% Para editar las captions
 
 
 % Estilo de pagina para tener las cabeceras
-\pagestyle{fancy}
-\lhead{Sistemas Operativos}
-\rhead{Diego Freijo - Maximiliano Giusto - Ignacio Iacobacci}
+%\pagestyle{fancy}
+%\lhead{Sistemas Operativos}
+%\rhead{Diego Freijo - Maximiliano Giusto - Ignacio Iacobacci}
 
 % Numeracion de paginas
 \pagenumbering{arabic}
 \parskip=1.5ex
 
 % Seteo de estilo de los algoritmos
-\algsetup{indent=2em}
+%\algsetup{indent=2em}
 
 \newcommand{\imagen}[3]
 {
@@ -68,8 +68,8 @@
 \titulo{Trabajo Pr'actico 2}
 \subtitulo{}
 \integrante{Freijo, Diego}{4/05}{giga.freijo@gmail.com}
-\integrante{Giusto, Maximiliano}{????}{maxi.giusto@gmail.com}
-\integrante{Iacobacci, Ignacio}{????}{iiacobac@gmail.com}
+\integrante{Giusto, Maximiliano}{486/05}{maxi.giusto@gmail.com}
+\integrante{Iacobacci, Ignacio}{322/02}{iiacobac@gmail.com}
 \maketitle
 
 \subsection*{Palabras Clave}
@@ -83,15 +83,535 @@ Minix, Kernell, Memoria, Perifericos, Drivers
 
 \section{Soluciones}
 \subsection{Ejercicio 1}
-\subsection{Ejercicio 2}
-\subsection{Ejercicio 3}
+\subsection{Ejercicio 2: Herramientas}
+
+Indique que hace el comando make y mknode. C'omo se utilizan 'estos comandos en la instalaci'on de MINIX y en la creaci'on de un nuevo kernel. Para el caso del make muestre un archivo ejemplo y explique que realiza cada uno de los comandos internos del archivo ejemplo.
+
+El comando make sirve para compilar archivos. Make es un programa que es normalmente usado para desarrollar programas grandes que consisten en muchos archivos. Lleva cuenta de cuales archivos objeto dependen de cuales archivos fuentes y de cabecera. Cuando es ejecutado, hace la mínima cantidad de recompilaciones para obtener el archivo destino actualizado.
+El comando make se utiliza en la creaci'on de un nuevo kernel. Luego de modificar algun archivo fuente del kernel, uno debe reconstruir el kernel. En el directorio /usr/src/tools est'an todos los archivos necesarios para reconstruir el kernel.
+
+El comando mknod sirve para crear archivos especiales ya sea archivos asociados a dispositivos de entrada salida o bien directorios. El uso de 'este comando est'a reservado a los superusuarios.
+
+A pesar de que en la instalación de MINIX nosotros no tuvimos que, expl'icitamente, usar estos comandos, el comando mknod se utiliz'o para crear los nodos device en el nodo raíz: /dev/tty; /dev/tty[0-2]; /dev/hd[0-9].
+
+
+
+\subsection{Ejercicio 3: Comandos b'asicos MINIX/UNIX}
+\subsubsection{Pongale password root a root.}
+
+Utilizando el comando passwd:
+
+\begin{verbatim}
+# passwd
+Changing the shadow password of root
+New password:
+Retype password:
+# exit
+Minix Release 2.0 Version 0
+noname login: root
+Password:
+#
+\end{verbatim}
+
+\subsubsection{pwd}
+
+Indique qué directorio pasa a ser su $current directory$ si ejecuta:
+
+\subsubsubsection{$\sharp$ cd /usr/src}
+
+\begin{verbatim}
+# cd /usr/src
+# pwd
+/usr/src
+\end{verbatim}
+
+\subsubsubsection{$\sharp$ cd}
+
+\begin{verbatim}
+# cd
+# pwd
+/
+#
+\end{verbatim}
+
+\subsubsubsection{¿Cómo explica el punto anterior?}
+
+Ejecutar el comando cd sin argumentos cambia el directorio actual al directorio home del usuario. Para el usuario root 'este directorio es el directorio ra'iz del sistema.
+
+\subsubsection{cat}
+
+Cu'al es el contenido del archivo /usr/src/.profile y para qu'e sirve.
+
+\begin{verbatim}
+# cat /usr/src/.profile
+# Login shell profile.
+
+# Environment.
+umask 022
+PATH=/usr/local/bin:/bin:/usr/bin
+PS1="! "
+export PATH
+
+# Erase character, erase line, and interrupt keys.
+stty erase '^H' kill '^U' intr '^?'
+# Check terminal type.
+case $TERM in
+dialup|unknown|network)
+        echo -n "Terminal type? ($TERM) "; read term
+        TERM="${term:-$TERM}"
+esac
+
+# Shell configuration.
+case "$0" in *ash) . $HOME/.ashrc;; esac
+#
+\end{verbatim}
+
+Cada usuario tendr'a 'este script en su home, y cada vez que se "loguee" se ejecutar'a.
+
+\subsubsection{find}
+
+En qu'e directorio se encuentra el archivo proc.c
+
+\begin{verbatim}
+# find / -name proc.c
+/usr/src/kernel/proc.c
+\end{verbatim}
+
+\subsubsection{mkdir}
+
+Genere un directorio /usr/$<$nombregrupo$>$
+
+\begin{verbatim}
+#mkdir /usr/grupo8
+# cd /usr
+# ls
+adm bin grupo5  lib   man  preserve src
+ast etc include local mdec spool    tmp
+\end{verbatim}
+
+\subsubsection{cp}
+
+Copie el archivo /etc/passwd al directorio /usr/$<$nombregrupo$>$
+
+\begin{verbatim}
+# cp /etc/passwd /usr/grupo5/passwd
+# cd /usr/grupo5
+# ls
+passwd
+#
+\end{verbatim}
+
+\subsubsection{chgrp}
+
+Cambie el grupo del archivo /usr/$<$grupo$>$/passwd para que sea other.
+\begin{verbatim}
+# pwd
+/usr/grupo5
+# ls -l
+total 1
+-rw-r--r-- 1 root operator 285 Jun 17 22:05 passwd
+# chgrp other passwd
+# ls -l
+total 1
+-rw-r--r-- 1 root other 285 Jun 17 22:05 passwd
+#
+\end{verbatim}
+
+\subsubsection{chown}
+
+Cambie el propietario del archivo /usr/$<$grupo$>$/passwd para que sea ast.
+
+\begin{verbatim}
+# chown ast passwd
+# ls -l
+total 1
+-rw-r--r-- 1 ast other 285 Jun 17 22:06 passwd
+#
+\end{verbatim}
+
+\subsubsection{chmod}
+
+Cambie los permisos del archivo /usr/$<$grupo$>$/passwd para que:
+
+\begin{itemize}
+\item el propietario tenga permisos de lectura, escritura y ejecuci'on
+\item el grupo tenga solo permisos de lectura y ejecuci'on
+\item el resto tenga solo permisos de ejecuci'on
+\end{itemize}
+
+\begin{verbatim}
+# chmod 751 passwd
+# ls -l
+total 1
+-rwxr-x--x 1 ast other 285 Jun 17 22:11 passwd
+#
+\end{verbatim}
+
+\subsubsection{grep}
+
+Muestre las lineas que tiene el texto include en el archivo /usr/src/kernel/main.c 
+
+\begin{verbatim}
+# grep include /usr/src/kernel/main.c
+#include "kernel.h"
+#include <signal.h>
+#include <unistd.h>
+#include <minix/callnr.h>
+#include <minix/com.h>
+#include "proc.h"
+#
+\end{verbatim}
+
+Muestre las lineas que tiene el texto POSIX que se encuentren en todos los archivos /usr/src/kernel/
+
+\begin{verbatim}
+# grep POSIX /usr/src/kernel/*
+/usr/src/kernel/kernel.h:#define _POSIX_SOURCE 1 /* tell headers to inclu
+de POSIX stuff */
+/usr/src/kernel/rs232.c: if ((tp->tty_termios.c_lflag & IXON) && rs->oxoff !=
+_POSIX_VDISABLE)
+/usr/src/kernel/system.c: * SYS_SENDSIG send a signal to a process (POSIX style)
+/usr/src/kernel/system.c: * SYS_SIGRETURN complete POSIX-style signalling
+/usr/src/kernel/system.c:/* Handle sys_sendsig, POSIX-style signal */
+/usr/src/kernel/system.c:/* POSIX style signals require sys_sigreturn to put
+things in order before the
+/usr/src/kernel/tty.c:/* These Posix functions are allowed to fail if _POSIX_JOB
+_CONTROL is
+/usr/src/kernel/tty.c: /* _POSIX_VDISABLE is a normal character value, so better
+escape it. */
+/usr/src/kernel/tty.c: if (ch == _POSIX_VDISABLE) ch |= IN_ESC;
+#
+\end{verbatim}
+
+\subsubsection{su}
+
+\subsubsubsection{Para qu'e sirve?}
+
+Permite convertir un usuario en otro sin tener que desconectarse del sistema.
+Por defecto lo convierte en superuser. Le pedir'a la password correspondiente.
+
+\subsubsubsection{Qu'e sucede si ejecuta el comando su estando logueado como root?}
+
+Se genera un shell nuevo. Como estabamos logueados como root, no pidi'o password.
+
+\subsubsubsection{Genere una cuenta de $<$usuario$>$}
+%el usuario es Maxi pero me pareció mejor poner pepe
+
+\begin{verbatim}
+# adduser pepe other /usr/pepe
+cpdir /usr/ast /usr/pepe
+chown -R 10:3 /usr/pepe
+echo pepe::0:0::: >>/etc/shadow
+echo pepe:##pepe:10:3:pepe:/usr/pepe: >>/etc/passwd
+The new user pepe has been added to the system. Note that the password,
+full name, and shell may be changed with the commands passwd(1), chfn(1),
+and chsh(1). The password is now empty, so only console logins are possible.
+\end{verbatim}
+
+\subsubsubsection{Entre a la cuenta $<$usuario$>$ generada}
+
+\begin{verbatim}
+Minix 2.0.0 Copyright 1997 Prentice-Hall, Inc.
+Executing in 32-bit protected mode
+at-hd0: QUEMU HARDDISK
+Memory size =3658K MINIX = 295K RAM disk = 1024K Available =2340K
+Sun Jun 17 22:30:46 MET 2007
+/dev/hd2 is read-write mounted on /usr
+Starting standard daemons: update.
+Minix Release 2.0 Version 0
+noname login: pepe
+$
+\end{verbatim}
+
+No pidi'o Password pues el usuario pepe no tiene a'un una seteada.
+ 
+\subsubsubsection{Repita los comandos de 3.10.2}
+
+Estando logueado como pepe ejecutamos el comando su.
+
+\begin{verbatim}
+$ su
+Password:
+#
+\end{verbatim}
+
+Nos pide la password de root pues el usuario pepe es parte del grupo other. Si fuera parte del grupo operator no la pedir'ia.
+
+\subsubsection{passwd}
+
+\subsubsubsection{Cambie la password del usuario nobody}
+
+\begin{verbatim}
+# passwd nobody
+Changing the password of nobody
+New password:
+Retype password:
+#
+\end{verbatim}
+
+\subsubsubsection{Presione las teclas ALT-F2 y ver'a otra sesi'on MINIX. Loguearse como nobody }
+
+\begin{verbatim}
+Minix Release 2.0 Version 0
+noname login: nobody
+Password:
+$
+\end{verbatim}
+
+Nos logueamos con password nobody.
+
+\subsubsubsection{Ejecutar el comando su}
+
+\begin{verbatim}
+$ su
+Password:
+#
+\end{verbatim}
+
+\paragraph[title]{Qu'e le solicita?}
+
+%\newline
+Solicita la password de root.
+
+\paragraph[title]{Sucede lo mismo que en 3.10.2?¿Por qu'e?}
+
+No, cuando se realiz'o lo mismo con el usuario root no fue necesario ingresar la password. Esto se debe a que el usuario nobody pertenece al grupo nogroup, quienes no tienen permisos para loguearse como root y, de hecho, casi no poseen ningun tipo de privilegios.
+
+\subsubsection{rm}
+
+Suprima el archivo /usr/$<$grupo$>$/passwd.
+\begin{verbatim}
+# ls /usr/grupo5
+passwd
+# rm /usr/grupo5/passwd
+# ls /usr/grupo5
+#
+\end{verbatim}
+
+\subsubsection{ln}
+
+Enlazar el archivo /etc/passwd a los siguientes archivos /tmp/contra1 /tmp/contra2.
+Hacer un ls -l para ver cuantos enlaces tiene /etc/passwd.
+
+\begin{verbatim}
+# ls -l /etc/passwd
+-rw-r--r-- 1 root operator 314 Apr 15 2007 /etc/passwd
+# ln /etc/passwd /tmp/contra1
+# ln /etc/passwd /tmp/contra2
+# ls -l /etc/passwd
+-rw-r--r-- 3 root operator 314 Apr 15 2007 /etc/passwd
+#
+\end{verbatim}
+
+En el listado del archivo, la segunda columna (luego de los permisos) indica la cantidad de links que tiene ese archivo.
+
+\subsubsection{mkfs FALTA}
+
+Genere un Filesystem MINIX en un diskette
+
+\subsubsection{mount FALTA}
+
+Montelo en el directorio /mnt
+
+\subsubsection{df FALTA}
+
+Qu'e espacio libre y ocupado tienen todos los filesystems montados?(en KBYTES)
+
+\subsubsection{ps}
+
+\subsubsubsection{¿Cuántos procesos de usuario tiene ejecutando?}
+
+\begin{verbatim}
+# ps -a
+PID TTY  TIME CMD
+ 41  co  0:00 -sh
+ 42  c1  0:00 getty
+ 47  c0  0:00 ash
+ 48  c0  0:00 ps -a
+\end{verbatim}
+
+Los procesos de usuario que se est'an ejecutando son 4 (incluyendo al ps).
+
+\subsubsubsection{Indique cu'antos son del sistema}
+
+\begin{verbatim}
+# ps -ax
+PID TTY  TIME CMD
+  0   ?  0:00 TTY
+  0   ?  0:00 SCSI
+  0   ?  0:00 WINCH
+  0   ?  0:00 SYN_AL
+  0   ?  8:35 IDLE
+  0   ?  0:00 PRINTER
+  0   ?  0:00 FLOPPY
+  0   ?  0:00 MEMORY
+  0   ?  0:00 CLOCK
+  0   ?  0:01 SYS
+  0   ?  0:06 HARDWAR
+  0   ?  0:00 MM
+  0   ?  0:04 FS
+  1   ?  0:00 INIT
+ 40  co  0:00 -sh
+ 27   ?  0:00 update
+ 41  c1  0:00 getty
+ 47  co  0:00 ash
+ 57  co  0:00 ps -ax
+#
+\end{verbatim}
+
+Aqu'i se listan todos los procesos incluyendo tambi'en a los de usuario. En total hay 18 procesos ejecut'andose, 4 son de usuario y 15 del sistema.
+
+\subsubsection{umount FALTA}
+
+\subsubsubsection{Desmonte el Filesystem del directorio /mnt}
+
+\subsubsubsection{Monte el Filesystem del diskette como read-only en el directorio /mnt}
+
+\subsubsubsection{Desmonte el Filesystem del directorio /mnt}
+
+\subsubsection{fsck FALTA}
+
+Chequee la consistencia de Filesystem del diskette
+
+\subsubsection{dosdir FALTA}
+
+Tome un diskette formateado en DOS con archivos y ejecute $dosdir a$
+
+Ejecute los comandos necesarios para que funcione correctamente el comando anterior
+
+\subsubsection{dosread FALTA}
+
+Copie un archivo de texto desde un diskette DOS al directorio /tmp
+
+\subsubsection{doswrite FALTA}
+
+Copie el archivo /etc/passwd al diskette DOS
+
+
 \subsection{Ejercicio 4}
 \subsection{Ejercicio 5}
 \subsection{Ejercicio 6}
 \subsection{Ejercicio 7}
 \subsection{Ejercicio 8}
 \subsection{Ejercicio 9}
-\subsection{Ejercicio 10}
+\subsection{Ejercicio 10: Modificaci'on de c'odigos}
+\begin{description}
+\item[a.] Modique el "scheduler"\ original del MINIX para el nivel de usuarios.
+\item[b.] Modifique la administraci'on de memoria original del MINIX
+\end{description}
+En ambos casos deber'a describir en el informe cu'ales fueron las decisiones tomadas, cu'ales fueron las espectativas y cu'ales fueron los resultados obtenidos e informar el juego de programas utilizados con los cuales se lleg'o a alguna conclusi'on. (test o pruebas mencionados en Forma de entrega).
+
+\subsubsection{Modique el "scheduler"\ origal del MINIX para el nivel de usuarios}
+\subsubsubsection{Decisiones tomadas}
+
+La administraci'on de procesos de Minix divide a los procesos en tres categor'ias: procesos de usuario, procesos SERVER (como ser MM, o FS) y procesos TASK (kernel). Asimismo, para los procesos de usuario, utiliza una administraci'on $Round-Robin$, y un proceso s'olo podr'a perder el recurso procesador por alguna de las tres siguientes razones:
+
+\begin{itemize}
+\item El proceso finaliza.
+\item Se bloquee por una operaci'on de E/S o sincronizaci'on.
+\item El uso exceda un cierto $Quantum$.
+\end{itemize}
+
+Decidimos modificar la administraci'on de los procesos de usuario para que cambie de $Round-Robin$ a $FIFO$,
+
+\subsubsubsection{Expectativas}
+
+Como estamos permitiendo un uso m'as prolongado y continuo del recurso procesador, es de esperar que los procesos de alto uso de CPU se vean beneficiados, quiz'as en detrimento de procesos que tengan, en cambio, mayor uso de E/S, ya que 'estos se bloquear'an r'apidamente y estar'an un largo tiempo en espero del recurso.
+
+\subsubsubsection{Resultados}
+
+Nuestra propuesta es modificar el archivo /usr/src/kernel/clock.c. De la siguiente manera: si esta definido UBA\_FCEN, entones la funcion $do\_clocktick$ no se ejecuta el c'odigo que realiza la selecci'on de un proceso de usuario nuevo, en el caso en que no haya ni procesos SERVER ni TASK para elegir y adem'as el proceso anterior haya excedido su $Quantum$.
+
+Se generaron dos procesos de prueba highCPU.c y lowCPU.c. El primero consiste en la repetici'on de un ciclo que contiene a su vez otro ciclo, en total clica aproximadamente 5000050000 veces. El segundo consiste en la repetici'on de un ciclo 10000 veces. Ambos al terminar muestran por pantalla la etiqueta: "Final de highCPU"\ y "Final de lowCPU"\ respectivamente.
+
+A continuación se muestran los resultados obtenidos con la administraci'on $Round-Robin$:
+
+\begin{verbatim}
+# cd /usr/grupo8/ej10
+# ls
+highCPU highCPU.c lowCPU lowCPU.c
+#./highCPU & ./lowCPU 
+Final de lowCPU
+# Final de highCPU
+#
+#./lowCPU & ./highCPU
+Final de lowCPU
+# Final de highCPU
+\end{verbatim}
+
+Si cambiamos a la administraci'on a $FIFO$ obtenemos los siguientes valores:
+
+\begin{verbatim}
+# cd /usr/grupo8/ej10
+# ls
+highCPU highCPU.c lowCPU lowCPU.c
+#./highCPU & ./lowCPU 
+Final de lowCPU
+# Final de highCPU
+#
+#./lowCPU & ./highCPU
+Final de highCPU
+# Final de lowCPU
+\end{verbatim}
+
+Con la administraci'on $Round-Robin$ lowCPU siempre termina primero. Debido a que como hace poco uso del procesador y adem'as tiene su "cuota"\ correspondiente debido al tipo de administraci'n hacen que termine de ejecutar antes que highCPU.
+
+Con la administraci'on $FIFO$ termina primero el que obtiene el recurso procesador primero. Ninguno de los procesos se bloquea, dando lugar a ejecutar al otro, ya que no realizan E/S.
+
+\subsubsection{Modifique la administraci'on de memoria original del MINIX}
+
+\subsubsubsection{Decisiones tomadas}
+MINIX utiliza administraci'on de memoria particionada variable, con $primer\ zona$ (first fit) como algoritmo de selecci'on. Se cambi'o el procedimiento de alocaci'on de memoria para que utilice el algoritmo de selecci'on $mayor\ zona$.
+
+\subsubsubsection{Expectativas}
+'Estas administraciones fueron vistas durante el curso. Tanto la administraci'on $mayor\ zona$ como la administraci'on "golosa" de $first\ fit$ tienen casos en la que resultan buenas y casos en las que no. Con lo cual no se espera alg'un comportamiento en particular. 
+
+\subsubsubsection{Resultados}
+Para realizar las modificaciones, cambiamos la secci'on de alocaci'on de memoria que ocurre en la funci'on $alloc\_mem$ del archivo /usr/src/mm/alloc.c. En ella se hace un while recorriendo los segmentos libres en la memoria del sistema en busca del de mayor tama'no. Cuando se encuentra (en el caso en que cubra el requerimiento) nos quedamos con ese lugar, caso contrario se devuelve un mensaje de error.
+
+Para poder ver los resultados agregamos dentro de la funci'on c'odigo que nos muestra el tama'no de los segmentos libres antes y despu'es de la alocaci'on.
+
+Usamos el programa de test 4000Clicks.c que puede encontrarse en la carpeta /usr/grupo8/ej10:
+\begin{verbatim}
+static char datos [4000*256]; /* reserva 1000k */
+int main ( void)
+{
+return 0 ;
+}
+\end{verbatim}
+
+Este programa lo 'unico que hace es reservar 4000 clicks (de 256 Bytes) de memoria que es equivalente a 1000 KB.
+Lo ejecutamos y observamos lo siguiente:
+
+\begin{verbatim}
+# ls
+Se quiere reservar 306 espacios de memoria
+1936 514 67 5860
+Los segmentos quedaron de la siguiente manera
+1936 514 67 5554
+Se quiere reservar 440 espacios de memoria
+1936 514 67 5860
+Los segmentos quedaron de la siguiente manera
+1936 514 67 5420
+4000Clicks 4000Clicks.c
+# ./4000Clicks
+Se quiere reservar 306 espacios de memoria
+1936 514 67 5860
+Los segmentos quedaron de la siguiente manera
+1936 514 67 5554
+Se quiere reservar 4514 espacios de memoria
+1936 514 67 5860
+Los segmentos quedaron de la siguiente manera
+1936 514 67 1346
+#
+\end{verbatim}
+
+Notar que el cambio fue el deseado, ya que al pedir memoria siempre se ocupa el segmento de mayor tama'no.
+
+Aclaraci'on: El click es la unidad b'asica de tama'no de memoria. Si el procesador es Intel est'a definida como 256 Bytes y var'ia para otros procesadores. Estos $define$ se encuentran en $const.h$.
+Para poder ver como se va modificando la memoria hay que bootear con la imagen $imagMemChck$ que est'a en el directorio /minix. %Las otras im'agenes tambi'en tienen la modificaci'on en la administraci'on de memoria pero el "debug"\ est'a \"apagado".
+
+
 \subsection{Ejercicio 11}
 \subsection{Ejercicio 12}
 
@@ -102,9 +622,8 @@ Minix, Kernell, Memoria, Perifericos, Drivers
 \clearpage
 \section{Referencias}
 \begin{itemize}
+\item http://es.wikipedia.org/wiki/Chmod
 \end{itemize}
-
-
 \end{document}
 %%%
 % EOF
