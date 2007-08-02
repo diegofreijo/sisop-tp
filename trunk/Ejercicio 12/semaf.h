@@ -3,6 +3,8 @@
 
 struct semaf {
 
+	char nombre[10];
+
 	int semafEnUso; /* 0 o 1 */
 
 	int valor;
