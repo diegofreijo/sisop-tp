@@ -6,7 +6,7 @@
 #define ERROR -1
 typedef int semaforo;
 
-_PROTOTYPE( semaforo crear_sem, (char* nombre[]));
+_PROTOTYPE( semaforo crear_sem, (char* nombre[], int valor) );
 
 _PROTOTYPE( int p_sem, (semaforo) 				);
 
