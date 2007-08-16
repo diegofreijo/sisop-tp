@@ -1,6 +1,6 @@
 [Files\0]
 ActiveFilters=
-Bookmark#0=232
+Bookmark#0=237
 Bookmark#1=0
 Bookmark#2=0
 Bookmark#3=0
@@ -10,15 +10,15 @@ Bookmark#6=0
 Bookmark#7=0
 Bookmark#8=0
 Bookmark#9=0
-CaretPos.X=38
-CaretPos.Y=71
+CaretPos.X=135
+CaretPos.Y=616
 CharSet=def
 FileName=informe.tex
 FoldedLines=
 IsMainFile=yes
 Opened=yes
 ScrollPos.X=0
-ScrollPos.Y=78
+ScrollPos.Y=697
 SearchListCount=0
 ShowSyntax=yes
 SpellChecking=yes
