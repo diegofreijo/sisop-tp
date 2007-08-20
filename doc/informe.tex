@@ -493,7 +493,93 @@ Copie un archivo de texto desde un diskette DOS al directorio \textbf{/tmp}
 Copie el archivo \textbf{/etc/passwd} al diskette DOS
 
 
-\subsection{Ejercicio 4}
+\subsection{Ejercicio 4: Uso de STDIN, STDOUT, STDERR y PIPES}
+\subsubsection{STDOUT}
+\subsubsubsection{1.4.1.1. Conserve el archivo /usr/$<$grupo$>$/fuentes.txt la salida del comando ls que muestra todos los archivos del directorio /usr/src y de los subdirectorios bajo /usr/src}
+
+\begin{verbatim}
+    # cd /usr/grupo8
+    # ls -al /usr/src > /usr/grupo8/fuentes.txt
+    #
+\end{verbatim}
+
+\subsubsubsection{1.4.1.2. Presente cuantas lineas, palabras y caracteres tiene /usr/$<$grupo$>$/fuentes.txt}
+
+\begin{verbatim}
+    # wc /usr/grupo8/fuentes.txt
+         25    218   1455 /usr/grupo8/fuentes.txt
+    #
+\end{verbatim}
+
+El archivo \textbf{/usr/grupo8/fuentes.txt} tiene 25 líneas, 218 palabras y 1455 caracteres.
+
+\subsubsection{STDOUT}
+\subsubsubsection{1.4.2.1. Agregue el contenido, ordenado alfab'eticamente, del archivo /etc/passwd al final del archivo /usr/$<$grupo$>$/fuentes.txt}
+
+\begin{verbatim}
+    # sort /etc/passwd >> /usr/grupo8/fuentes.txt
+\end{verbatim}
+
+\subsubsubsection{1.4.2.2. Presente cu'antas lineas, palabras y caracteres tiene usr/$<$grupo$>$/fuentes.txt}
+
+\begin{verbatim}
+    # wc /usr/grupo8/fuentes.txt
+         34    234   1769 /usr/grupo8/fuentes.txt
+    #
+\end{verbatim}
+
+El archivo \textbf{/usr/grupo8/fuentes.txt} tiene 34 líneas, 234 palabras y 1769 caracteres.
+
+\subsubsection{STDIN}
+
+\subsubsubsection{1.4.3.1. Genere un archivo llamado /usr/$<$grupo$>$/hora.txt usando el comando echo con el siguiente contenido: 2355}
+
+\begin{verbatim}
+    # echo 2355 > /usr/grupo8/hora.txt
+\end{verbatim}
+
+\subsubsubsection{1.4.3.2. Cambie la hora del sistema usando el archivo /usr/$<$grupo$>$/hora.txt generado en 1.4.3.1}
+
+\begin{verbatim}
+    # date -q < /usr/grupo8/hora.txt
+\end{verbatim}
+
+\subsubsubsection{1.4.3.3. Presente la fecha del sistema}
+
+\begin{verbatim}
+    # date
+    Mon Aug 20 23:55:07 MET DST 2007
+    #
+\end{verbatim}
+
+\subsubsection{STDERR}
+
+\subsubsubsection{Guarde el resultado de ejecutar el comando dosdir k en el archivo /usr/$<$grupo$>$/error.txt. Muestre el contenido de /usr/<grupo>/error.txt.}
+
+\begin{verbatim}
+    # dosdir k > /usr/grupo8/error.txt 2>&1
+    # cat /usr/grupo8/error.txt
+    dosdir: cannot open /dev/dosK: No such file or directory
+    #
+\end{verbatim}
+
+\subsubsection{PIPES}
+Posici'onese en el directorio \textbf{/}(directorio ra'iz), una vez que haya hecho eso:
+\subsubsubsection{1.4.5.1. Liste en forma amplia los archivos del directorio /usr/bin que comiencen con la letra s. Del resultado obtenido, seleccione las l'ineas que contienen el texto sync e informela cantidad de caracteres, palabras y l'ineas.}
+Nota 1: Est'a prohibido, en este 'item, usar archivos temporales de trabajo. 
+
+Nota 2: Si le da error, es por falta de memoria, cierre el proceso de la otra sesi'on, haga un kill sobre los procesos update y getty.
+
+\begin{verbatim}
+    # pwd
+    /
+    # ls -lc /usr/bin/s* | grep sync | wc
+          2     18    140
+    #
+\end{verbatim}
+
+2 líneas, 18 palabras y 140 caracteres.
+
 \subsection{Ejercicio 5}
 \subsection{Ejercicio 6}
 \subsection{Ejercicio 7}
@@ -506,7 +592,7 @@ Copie el archivo \textbf{/etc/passwd} al diskette DOS
 \end{description}
 En ambos casos deber'a describir en el informe cu'ales fueron las decisiones tomadas, cu'ales fueron las espectativas y cu'ales fueron los resultados obtenidos e informar el juego de programas utilizados con los cuales se lleg'o a alguna conclusi'on. (test o pruebas mencionados en Forma de entrega).
 
-\subsubsection{Modique el "scheduler"\ origal del MINIX para el nivel de usuarios}
+\subsubsection{Modique el "scheduler"\ original del MINIX para el nivel de usuarios}
 \subsubsubsection{Decisiones tomadas}
 
 La administraci'on de procesos de Minix divide a los procesos en tres categor'ias: procesos de usuario, procesos SERVER (como ser MM, o FS) y procesos TASK (kernel). Asimismo, para los procesos de usuario, utiliza una administraci'on $Round-Robin$, y un proceso s'olo podr'a perder el recurso procesador por alguna de las tres siguientes razones:
@@ -521,11 +607,13 @@ Decidimos modificar la administraci'on de los procesos de usuario para que cambi
 
 \subsubsubsection{Expectativas}
 
-Como estamos permitiendo un uso m'as prolongado y continuo del recurso procesador, es de esperar que los procesos de alto uso de CPU se vean beneficiados, quiz'as en detrimento de procesos que tengan, en cambio, mayor uso de E/S, ya que 'estos se bloquear'an r'apidamente y estar'an un largo tiempo en espero del recurso.
+Como estamos permitiendo un uso m'as prolongado y continuo del recurso procesador, es de esperar que los procesos de alto uso de CPU se vean beneficiados, quiz'as en detrimento de procesos que tengan, en cambio, mayor uso de E/S, ya que 'estos se bloquear'an r'apidamente y estar'an un largo tiempo en espera del recurso.
 
 \subsubsubsection{Resultados}
 
-Nuestra propuesta es modificar el archivo \textbf{/usr/src/kernel/clock.c}. De la siguiente manera: si esta definido UBA\_FCEN, entones la funcion $do\_clocktick$ no se ejecuta el c'odigo que realiza la selecci'on de un proceso de usuario nuevo, en el caso en que no haya ni procesos SERVER ni TASK para elegir y adem'as el proceso anterior haya excedido su $Quantum$.
+Nuestra propuesta es modificar el archivo \textbf{/usr/src/kernel/clock.c}. De la siguiente manera: si esta definido UBA\_FCEN, entonces en la funci'on $do\_clocktick$ no se ejecutar'a el c'odigo que realiza la selecci'on de un proceso de usuario nuevo, en el caso en que no haya ni procesos SERVER ni TASK para elegir y adem'as que el proceso anterior haya excedido su $Quantum$.
+
+El c'odigo que no se ejecuta si UBA\_FCEN est'a definido est'a en el Ap'endice A.
 
 Se generaron dos procesos de prueba \textbf{highCPU.c} y \textbf{lowCPU.c}. El primero consiste en la repetici'on de un ciclo que contiene a su vez otro ciclo, en total clica aproximadamente 5000050000 veces. El segundo consiste en la repetici'on de un ciclo 10000 veces. Ambos al terminar muestran por pantalla la etiqueta: "Final de highCPU"\ y "Final de lowCPU"\ respectivamente.
 
@@ -559,7 +647,7 @@ Si cambiamos a la administraci'on a $FIFO$ obtenemos los siguientes valores:
     # Final de lowCPU
 \end{verbatim}
 
-Con la administraci'on $Round-Robin$ lowCPU siempre termina primero. Debido a que como hace poco uso del procesador y adem'as tiene su "cuota"\ correspondiente debido al tipo de administraci'n hacen que termine de ejecutar antes que highCPU.
+Con la administraci'on $Round-Robin$ lowCPU siempre termina primero. Debido a que hace poco uso del procesador (menos que highCPU) y adem'as tiene su "\ cuota"\ de procesador correspondiente debido al tipo de administraci'on. Esto hace que termine de ejecutar antes que highCPU.
 
 Con la administraci'on $FIFO$ termina primero el que obtiene el recurso procesador primero. Ninguno de los procesos se bloquea, dando lugar a ejecutar al otro, ya que no realizan E/S.
 
@@ -568,13 +656,15 @@ Con la administraci'on $FIFO$ termina primero el que obtiene el recurso procesad
 \subsubsubsection{Decisiones tomadas}
 MINIX utiliza administraci'on de memoria particionada variable, con $primer\ zona$ (first fit) como algoritmo de selecci'on. Se cambi'o el procedimiento de alocaci'on de memoria para que utilice el algoritmo de selecci'on $mayor\ zona$.
 
+El c'odigo modificado se encuentra en el Ap'endice A.
+
 \subsubsubsection{Expectativas}
-'Estas administraciones fueron vistas durante el curso. Tanto la administraci'on $mayor\ zona$ como la administraci'on "golosa" de $first\ fit$ tienen casos en la que resultan buenas y casos en las que no. Con lo cual no se espera alg'un comportamiento en particular. 
+'Estas administraciones fueron vistas durante el curso. Tanto la administraci'on $mayor\ zona$ como la administraci'on "golosa" de $first\ fit$ tienen casos en la que resultan buenas y casos en las que no. Con lo cual no se espera alg'un comportamiento en particular, salvo porque se deber'ia de estar tomando siempre el segmento de mayor tama'no.
 
 \subsubsubsection{Resultados}
-Para realizar las modificaciones, cambiamos la secci'on de alocaci'on de memoria que ocurre en la funci'on $alloc\_mem$ del archivo \textbf{/usr/src/mm/alloc.c}. En ella se hace un while recorriendo los segmentos libres en la memoria del sistema en busca del de mayor tama'no. Cuando se encuentra (en el caso en que cubra el requerimiento) nos quedamos con ese lugar, caso contrario se devuelve un mensaje de error.
+Para realizar las modificaciones, cambiamos la secci'on de alocaci'on de memoria que ocurre en la funci'on $alloc\_mem$ del archivo \textbf{/usr/src/mm/alloc.c}. En ella se hace un while recorriendo los segmentos libres en la memoria del sistema en busca del de mayor tama'no. Cuando se encuentra (en el caso en que cubra el requerimiento) nos quedamos con ese lugar, caso contrario se devuelve un mensaje de error (Ver Ap'endice).
 
-Para poder ver los resultados agregamos dentro de la funci'on c'odigo que nos muestra el tama'no de los segmentos libres antes y despu'es de la alocaci'on.
+Para poder ver los resultados agregamos dentro de la funci'on c'odigo que nos muestra el tama'no de los segmentos libres antes y despu'es de la alocaci'on. Para que dicho c'odigo se ejecute debe estar definida la variable DEBUGG. Dicha variable se encuentra en \textbf{/usr/include/minix/config.h}.
 
 Usamos el programa de test 4000Clicks.c que puede encontrarse en la carpeta \textbf{/usr/grupo8/ej10}:
 \begin{verbatim}
@@ -611,7 +701,7 @@ Lo ejecutamos y observamos lo siguiente:
     #
 \end{verbatim}
 
-Notar que el cambio fue el deseado, ya que al pedir memoria siempre se ocupa el segmento de mayor tama'no.
+Notar que el cambio fue el deseado, ya que al pedir memoria siempre se ocupa el segmento de mayor tama'no. Usando la administraci'on anterior se ubiese ocupado el primer bloque.
 
 Aclaraci'on: El click es la unidad b'asica de tama'no de memoria. Si el procesador es Intel est'a definida como 256 Bytes y var'ia para otros procesadores. Estos $define$ se encuentran en $const.h$.
 Para poder ver como se va modificando la memoria hay que bootear con la imagen $imagMemChck$ que est'a en el directorio \textbf{/minix}. %Las otras im'agenes tambi'en tienen la modificaci'on en la administraci'on de memoria pero el "debug"\ est'a \"apagado".
@@ -619,6 +709,143 @@ Para poder ver como se va modificando la memoria hay que bootear con la imagen $
 
 \subsection{Ejercicio 11}
 \subsection{Ejercicio 12}
+
+\clearpage
+\section{Ap'endice A}
+A continuaci'on se muestra el c'odigo de la funci'on $do\_clocktick$ que no se ejecutar'a si est'a definido UBA\_FCEN. Dicha funci'on se encuentra en el archivo \textbf{/usr/src/kernel/clock.c}.
+
+\begin{verbatim}
+[...]
+#ifndef UBA_FCEN
+  /* If a user process has been running too long, pick another one. */
+
+  if (--sched_ticks == 0) {
+        if (bill_ptr == prev_ptr) lock_sched(); /* process has run too long */
+        sched_ticks = SCHED_RATE;               /* reset quantum */
+        prev_ptr = bill_ptr;                    /* new previous process */
+  }
+#endif
+\end{verbatim}
+
+
+
+Aqu'i se ver'a como fue modificada la funci'on $alloc\_mem$, la cual se encuentra en el archivo \textbf{/usr/src/mm/alloc.c}.
+
+\begin{verbatim}
+[...]
+/*======================================================================*
+* alloc_mem *
+*======================================================================*/
+#ifdef UBA_FCEN
+
+PUBLIC phys_clicks alloc_mem(clicks)
+phys_clicks clicks; 
+{
+  register struct hole *max, *anterior;
+  phys_clicks old_base;
+  register struct hole *actual, *debugg;
+  actual = hole_head;
+  max = hole_head;
+
+#ifdef DEBUGG
+
+  /*DEBUGER: para ver como es el estado inicial de la memoria*/
+  debugg = hole_head;
+  printf("Se quiere reservar %d espacios de memoria \n",clicks);
+  while (debugg != NIL_HOLE)
+  {
+    printf("%d ",debugg->h_len);
+    debugg = debugg->h_next;
+  }
+  printf("\n");
+  /***********************************************************/
+
+#endif
+
+  while (actual->h_next != NIL_HOLE)
+  {
+    if (actual->h_next->h_len > max->h_len)
+    {
+      max = actual->h_next;
+      anterior = actual;
+    }
+    actual = actual->h_next;
+  }
+
+  if (max->h_len < clicks)
+  }
+    return(NO_MEM);
+  }
+  else
+  {
+    old_base = max->h_base;
+    max->h_base += clicks;
+    max->h_len -= clicks;
+  }
+
+  if (max->h_len == 0)
+  {
+    del_slot(anterior, max);
+  }
+
+#ifdef DEBUGG
+
+  /*DEBUG: para ver como queda la memoria una vez hecha la alicacion*/
+  debugg = hole_head;
+  printf("Los segmentos de memoria quedaron de la siguiente manera \n");
+  while (debugg != NIL_HOLE)
+  {
+    printf("%d ",debugg->h_len);
+    debugg = debugg->h_next;
+  }
+  printf("\n");
+  /******************************************************************/
+
+#endif
+
+  return(old_base);
+}
+
+#else
+
+PUBLIC phys_clicks alloc_mem(clicks)
+phys_clicks clicks;             /* amount of memory requested */
+{
+/* Allocate a block of memory from the free list using first fit. The block
+ * consist of a sequence of contiguous bytes, whose length in clicks is 
+ * given by 'clics'.  A pointer to the block is returned.  The block is 
+ * always on a click boundary. This procedure is called when memory is
+ * needed for FORK or EXEC.
+ */
+  
+  register struct hole *hp, *prev_ptr;
+  phys_clicks old_base;
+
+  hp = hole_head;
+  while (hp != NIL_HOLE) {
+        if (hp->h_len >= clicks) {
+            /* We found a hole that is big enough.  Use it. */
+            old_base = hp->h_base;  /* remember where it started */
+            hp->h_base += clicks;   /* bite a piece off */
+            hp->h_len -= clicks;    /* ditto */
+
+            /* If hole is only partly used, reduce size and return. */
+            if (hp->h_len != 0) return (old _base);
+
+            /* The entire hole has been used up.  Manipulate free list. */
+            del_slot(prev_ptr, hp);
+            return(old_base);
+        }
+        
+        prev_ptr = hp;
+        hp = hp->h_next;
+  }
+  return(NO_MEM);
+}
+
+#endif
+[...]
+\end{verbatim}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -630,6 +857,7 @@ Para poder ver como se va modificando la memoria hay que bootear con la imagen $
 \item Sistemas Operativos - Dise'no e Implementaci'on (Andrew Tanenbaum - Prentice Hall 1998)
 \item http://www.minix3.org/
 \item http://es.wikipedia.org/wiki/Chmod
+\item 
 \end{itemize}
 \end{document}
 %%%
