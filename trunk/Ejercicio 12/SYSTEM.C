@@ -86,6 +86,15 @@
  * | SYS_MEM    | mem base | mem size | tot mem |
  * ----------------------------------------------
  *
+ *
+ *    m_type        m1_i1      m1_i2      m1_i3
+ * ---------------+----------+----------+----------
+ * | SYS_BLOCK    | proc_nr  |		    |		  |
+ * |----------------------------------------------|
+ * | SYS_UNBLOCK  | proc_nr  |		    |		  |
+ * ------------------------------------------------
+ *
+ *
  * In addition to the main sys_task() entry point, there are 5 other minor
  * entry points:
  *   cause_sig:	take action to cause a signal to occur, sooner or later
@@ -194,11 +203,11 @@ PUBLIC void sys_task()
 
 	register struct proc *rp;
 
-	rp = proc_addr(m_ptr->PROC2); /* process to block´s id */
+	rp = proc_addr(m_ptr->PROC1);
 
-	rp->p_flags |= BLOCK_X_SEM; /* bloquea x semáforo */
+	if (rp->p_flags == 0) lock_unready(rp);
 
-	lock_unready(rp);
+	rp->p_flags |= BLOCK_X_SEM; /* bloquea x semaforo */
 
 	return(OK);
 }
@@ -213,11 +222,11 @@ PUBLIC void sys_task()
 
  	register struct proc *rp;
 
- 	rp = proc_addr(m_ptr->PROC2); /* process to unblock´s id */
+ 	rp = proc_addr(m_ptr->PROC1); /* process to unblocks id */
 
- 	rp->p_flags &= ~BLOCK_X_SEM; /* desbloquea x semáforo */
+ 	rp->p_flags &= ~BLOCK_X_SEM; /* desbloquea x semaforo */
 
- 	lock_ready(rp);
+ 	if (rp->p_flags == 0) lock_ready(rp);
 
  	return(OK);
 }
