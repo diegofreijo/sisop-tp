@@ -315,14 +315,6 @@ Se genera un shell nuevo. Como estabamos logueados como root, no pidi'o password
 
 \subsubsubsection{1.3.11.4. Entre a la cuenta $<$usuario$>$ generada}
 
-%\begin{verbatim}
-%    Minix 2.0.0 Copyright 1997 Prentice-Hall, Inc.
-%    Executing in 32-bit protected mode
-%    at-hd0: QUEMU HARDDISK
-%    Memory size =3658K MINIX = 295K RAM disk = 1024K Available =2340K
-%    Sun Jun 17 22:30:46 MET 2007
-%    /dev/hd2 is read-write mounted on /usr
-%    Starting standard daemons: update.
 \begin{verbatim}
     Minix Release 2.0 Version 0
     noname login: pepe
@@ -410,17 +402,51 @@ Hacer un ls -l para ver cuantos enlaces tiene \textbf{/etc/passwd}.
 
 En el listado del archivo, la segunda columna (luego de los permisos) indica la cantidad de links que tiene ese archivo.
 
-\subsubsection{mkfs FALTA}
+\subsubsection{mkfs}
 
 Genere un Filesystem MINIX en un diskette
 
-\subsubsection{mount FALTA}
+\begin{verbatim}
+    # mkfs /dev/fd0
+\end{verbatim}
 
-M'ontelo en el directorio \textbf{/mnt}.
+\subsubsection{mount}
 
-\subsubsection{df FALTA}
+\subsubsubsection{M'ontelo en el directorio \textbf{/mnt}.}
 
-Qu'e espacio libre y ocupado tienen todos los filesystems montados?(en KBYTES)
+\begin{verbatim}
+    # mount /dev/fd0 /mnt
+    /dev/fd0 is read-write mounted on /mnt
+    #
+\end{verbatim}
+
+\subsubsubsection{Presente los filesystems que tiene montados.}
+
+\begin{verbatim}
+    # mount
+    /dev/hd1 is root device
+    /dev/hd2 is mounted on /usr
+    /dev/fd0 is mounted on /mnt
+    #
+\end{verbatim}
+
+
+\subsubsection{df}
+
+\subsubsubsection{Qu'e espacio libre y ocupado tienen todos los filesystems montados?(en KBYTES)}
+
+\begin{verbatim}
+# df
+Device    Inodes Inodes Inodes  Blocks Blocks Blocks  Mounted   V Pr
+           total  used   free    total  used   free      on         
+           -----  -----  -----   -----  -----  -----    ------   - --
+/dev/hd1    496    212    284     1480    700    780    /        2 rw
+/dev/hd2  12528   3309   9219    75096  27443   47653   /usr     2 rw
+/dev/fd0    480      1    479     1440     35    1405   /mnt     2 rw
+#
+\end{verbatim}
+
+En todos los dispositivos, el tama'no de bloque es 1KB, por lo tanto el espacio disponible en KB es el indicado por la columna \textbf{Blocks free} y el espacio ocupado es el indicado por la columna \textbf{Blocks used}.
 
 \subsubsection{ps}
 
@@ -466,32 +492,107 @@ Los procesos de usuario que se est'an ejecutando son 4 (incluyendo al \textbf{ps
 
 Aqu'i se listan todos los procesos incluyendo tambi'en a los de usuario. En total hay 18 procesos ejecut'andose, 4 son de usuario y 15 del sistema.
 
-\subsubsection{umount FALTA}
+\subsubsection{umount}
 
 \subsubsubsection{1.3.19.1. Desmonte el Filesystem del directorio /mnt}
 
+\begin{verbatim}
+    # umount /dev/fd0
+    /dev/fd0 unmounted from /mnt
+    #
+\end{verbatim}
+
 \subsubsubsection{1.3.19.2. Monte el Filesystem del diskette como read-only en el directorio /mnt}
+
+\begin{verbatim}
+    # mount /dev/fd0 /mnt -r
+    /dev/fd0 is read-only mounted on /mnt
+    #
+\end{verbatim}
 
 \subsubsubsection{1.3.19.3. Desmonte el Filesystem del directorio /mnt}
 
-\subsubsection{fsck FALTA}
+\begin{verbatim}
+    # umount /dev/fd0
+    /dev/fd0 unmounted from /mnt
+    #
+\end{verbatim}
 
-Chequee la consistencia de Filesystem del diskette
+\subsubsection{fsck}
 
-\subsubsection{dosdir FALTA}
+\subsubsubsection{Chequee la consistencia de Filesystem del diskette}
 
-Tome un diskette formateado en DOS con archivos y ejecute $dosdir a$
+\begin{verbatim}
+    # fsck /dev/fd0
 
-Ejecute los comandos necesarios para que funcione correctamente el comando anterior
+    Checking zone map
+    Checking inode map
+    Checking inode list
+    
+    blocksize =  1024        zonesize  =  1024
+    
+         0    Regular files
+         1    Directory
+         0    Block special files
+         0    Character special files
+       479    Free inodes
+         0    Named pipes
+         0    Symbolic links
+      1405    Free zones
+    #
+\end{verbatim}
 
-\subsubsection{dosread FALTA}
+\subsubsection{dosdir}
 
-Copie un archivo de texto desde un diskette DOS al directorio \textbf{/tmp}
+\subsubsubsection{Tome un diskette formateado en DOS con archivos y ejecute $dosdir a$}
 
-\subsubsection{doswrite FALTA}
+\begin{verbatim}
+    #dosdir a
+    dosdir: cannot open /dev/dosA: no such file or directory
+    #
+\end{verbatim}
 
-Copie el archivo \textbf{/etc/passwd} al diskette DOS
+\subsubsubsection{Ejecute los comandos necesarios para que funcione correctamente el comando anterior}
+El diskette con formato DOS est'a en \textbf{/dev/fd1}
 
+\begin{verbatim}
+    #dosdir fd1
+    HOLADOS.TXT
+    ABMUSR
+    GETNEXTG
+    MACHAQUE
+    #
+\end{verbatim}
+
+\subsubsection{dosread}
+
+\subsubsubsection{Copie un archivo de texto desde un diskette DOS al directorio \textbf{/tmp}}
+
+\begin{verbatim}
+    #dosread fd1 HOLADOS.TXT
+    hola mundo!
+
+    #dosread -a fd1 HOLADOS.TXT > /tmp/holaminix.txt
+    #cat /tmp/holaminix.txt
+    hola mundo!
+
+    #
+\end{verbatim}
+
+\subsubsection{doswrite}
+
+\subsubsubsection{Copie el archivo \textbf{/etc/passwd} al diskette DOS}
+
+\begin{verbatim}
+    #doswrite -a fd1 passwd < /etc/passwd
+    #dosdir fd1
+    HOLADOS.TXT
+    ABMUSR
+    GETNEXTG
+    MACHAQUE
+    PASSWD
+    #
+\end{verbatim}
 
 \subsection{Ejercicio 4: Uso de STDIN, STDOUT, STDERR y PIPES}
 \subsubsection{STDOUT}
