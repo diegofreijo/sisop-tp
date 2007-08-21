@@ -682,6 +682,12 @@ Nota 2: Si le da error, es por falta de memoria, cierre el proceso de la otra se
 2 líneas, 18 palabras y 140 caracteres.
 
 \subsection{Ejercicio 5}
+El comando que realiza las tareas es \textbf{abmusr} y su uso es
+
+Para agregar al usuario arturo: \verb0abmusr -a arturo grupoarturo /usr/arturo0
+
+Para borrar al usuario arturo: \verb0abmusr -b arturo0
+
 \subsection{Ejercicio 6: Ejecuci'on de procesos en Background}
 Crear el siguiente programa 
 \begin{verbatim}
@@ -929,6 +935,52 @@ Para poder ver como se va modificando la memoria hay que bootear con la imagen $
 
 
 \subsection{Ejercicio 11}
+Se realizaron los siguientes cambios
+
+\verb0/usr/include/minix/callnr.h0
+
+Se incrementó en 1 el define NCALLS
+Se agregó \verb0#define LLAMSISTEMA0 con el nro correspondiente 
+
+\verb0/usr/src/mm/table.c0
+
+Nota: no se usó el nombre pedido x la cátedra (newcall), ya que este fue usado para otras pruebas. Se realizó una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente. 
+
+El el mismo directorio el newcall.c y el othercall.c son source para probar dichas funciones
+\begin{verbatim}
+./newcall
+./othercall
+\end{verbatim}
+
+Tienen la misma funcionalidad que \verb0./llam 10
+
+
+\subsubsection{Pruebas}
+
+En imagen minix para ejercicio 11
+
+Fuente: \verb0/usr/ej11/llam.c0
+
+Ejecutable: \verb0/usr/ej11/llam0
+
+Modo de prueba
+
+\begin{verbatim}
+./llam [opcion]
+\end{verbatim}
+
+Opcion es del 1 al 5
+
+\begin{enumerate}
+\item Entrega el pid del programa
+\item Entrega el pid del padre, que, al estar implementado en MM, es el pid del mm o sea 0
+\item Entrega el puntero al segmento text, en hexadecimal
+\item Entrega el puntero al segmento data, en hexadecimal
+\item Entrega el puntero al segmento stack, en hexadecimal
+\end{enumerate}
+
+Para las opciones 3, 4 y 5, para verificar la correctitud de la misma se agregó un ciclo while para evitar que el programa termine. Al ejecutar el programa con algunas de estas opciones, al presionar F2 veremos la informacion de los segmentos correspondientes. Para matar al proceso, abrimos otra consola, ejecutamos ps para ver el nro del mismo y con el comando \verb0kill [nro proc]0 lo eliminamos.
+
 \subsection{Ejercicio 12}
 
 \clearpage
