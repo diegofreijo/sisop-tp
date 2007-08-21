@@ -1,0 +1,44 @@
+Cambios para ejercicio 11
+
+/usr/include/minix/callnr.h
+Se incrementó en 1 el define NCALLS
+Se agregó #define LLAMSISTEMA con el nro correspondiente 
+
+/usr/src/mm/table.c 
+
+
+Nota: no se usó el nombre pedido x la cátedra (newcall), ya que este fue usado para otras pruebas. Se realizó una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente. 
+El el mismo directorio el newcall.c y el othercall.c son source para probar dichas funciones
+./newcall
+./othercall
+
+Tienen la misma funcionalidad que ./llam 1
+
+
+
+Pruebas ejercicio 11
+
+En imagen minix para ejercicio 11
+
+/usr/ej11/llam.c --> fuente
+/usr/ej11/llam	 --> ejecutable
+
+Modo de prueba
+
+./llam [opcion] 
+
+Opcion es del 1 al 5
+
+1_Entrega el pid del programa
+2_Entrega el pid del padre, que, al estar implementado en MM, es el pid del mm o sea 0
+3_Entrega el puntero al segmento text, en hexadecimal
+4_Entrega el puntero al segmento data, en hexadecimal
+5_Entrega el puntero al segmento stack, en hexadecimal
+
+Para las opciones 3, 4 y 5, para verificar la correctitud de la misma se agregó un ciclo while para evitar que el programa termine.
+Al ejecutar el programa con algunas de estas opciones, al presionar F2 veremos la informacion de los segmentos correspondientes.
+Para matar al proceso, abrimos otra consola, ejecutamos ps para ver el nro del mismo y con el comando kill [nro proc] lo eliminamos.
+
+
+
+

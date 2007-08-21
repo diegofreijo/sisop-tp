@@ -1,31 +1,53 @@
+#include "mm.h"
+#include <minix/callnr.h>
+#include <signal.h>
+#include "mproc.h"
+#include <stdlib.h>
+#include "semaf.h"
+#include <minix/constsemaf.h>
+#include <minix/com.h>
+#include <minix/type.h>
+#include <string.h>
+
+FORWARD _PROTOTYPE( int do_is_sem, (void)				);
+FORWARD _PROTOTYPE( int do_val_sem, (void)				);
+FORWARD _PROTOTYPE( int do_get_next_bloq_proc, (void)			);
+FORWARD _PROTOTYPE( void do_add_bloq_proc, (int)			);
+FORWARD _PROTOTYPE( void do_init_sem, (void)				);
+
 /*===========================================================================*
- *				do_crear_sem			     								 *
+ *			do_crear_sem					     *
  *===========================================================================*/
 
 PUBLIC int do_crear_sem(void) {
 
-	register struct mproc *rmp = mp;
-
 	register struct semaf *sp = semaforos;
 
-	register semaforo s;
+	semaforo s;
 
-	pid procID		= mp->PROC1;
-	char* nombre[]	= mp->NOMBRE_SEM;
+	pid_t procID		= mproc[who].mp_pid;
+	char* nombre		= mm_in.NOMBRE_SEM;
+	int valor		= mm_in.VALOR;
 
-	int i;
+	int i, j;
 
+	i = 0;
+
+	/* printf("este es el proc en crear %d\n",procID); */	
+
+	
 	for(i=0;i<MAX_SEM;i++) {
 		/* Busco si el nombre corresponde a un semaforo ya creado */
-		if (strcmp(semaforos[i].nombre, nombre) {
+		if (strcmp(semaforos[i].nombre, nombre)) {
 			break;
 		}
 	}
 
-
+	/* i se incrementa en uno mas, no se xq, entonces lo decremento */
+	
 	if ( i > 0 ) {
 		/* Si el semaforo ya existe lo selecciono */
-		s = i;
+		s = --i;
 
 	} else {
 		/* Sino busco el primer semaforo sin uso */
@@ -33,6 +55,15 @@ PUBLIC int do_crear_sem(void) {
 			if (semaforos[i].semafEnUso == 0) {
 
 				s = i;
+				/* Defino el semaforo */ 
+				 
+				strcpy(semaforos[s].nombre, nombre);
+				semaforos[s].valor = valor; 
+				semaforos[s].semafEnUso = 1;
+				semaforos[s].cant_proc  = 0;
+				semaforos[s].inicio_cola_bloq = 0;
+				semaforos[s].fin_cola_bloq    = 0;
+
 				break;
 
 			}
@@ -47,15 +78,7 @@ PUBLIC int do_crear_sem(void) {
 
 	} else {
 
-		/* asigno datos a semáforo */
-		semaforos[s].nombre[10] = nombre;
-		semaforos[s].semafEnUso = 1;
-
-		semaforos[s].valor		= 0;
 		semaforos[s].cant_proc++;
-
-		semaforos[s].inicio_cola_bloq	= 0;
-		semaforos[s].fin_cola_bloq	 	= 0;
 
 		/* Asigno al proceso al primer lugar vacio de la lista de procesos */
 		for(j=0;j<MAX_PROC;j++) {
@@ -73,23 +96,26 @@ PUBLIC int do_crear_sem(void) {
 
 }
 
+
 /*===========================================================================*
- *				do_is_sem					     							 *
+ *			do_is_sem		    			     *
  *===========================================================================*/
 
 PRIVATE int do_is_sem(void) {
 
-	register struct mproc *rmp = mp;
+	register int i;
 
 	register struct semaf *sp = semaforos;
 
-	register pid procID = mp->PROC1;
-	register semaforo s = mp->SEMAFORO;
+	pid_t procID = mproc[who].mp_pid;
+	semaforo s = mm_in.SEMAFORO;
 
-	int i;
+	/* printf("el proc es: %d\n", procID); */
 
 	for(i=0;i<MAX_PROC;i++) {
-
+		/*	
+		printf("proc en uso actual: %d\n", semaforos[s].procEnUso[i]);
+		*/
 		if (semaforos[s].procEnUso[i] == procID) {
 			return 1;
 		}
@@ -107,26 +133,31 @@ PUBLIC int do_p_sem(void) {
 
 	message m;
 
-	register struct mproc *rmp = mp;
-
 	register struct semaf *sp = semaforos;
 
-	register pid procID = mp->PROC1;
-	register semaforo s = mp->SEMAFORO;
+	register int proc_nr;
+	register semaforo s = mm_in.SEMAFORO;
 
-	if (is_sem(s)) {
+       /** 
+	 * Calculo la posicion del proceso en la tabla. 
+	 * Esta es el puntero al proceso menos el puntero a la lista
+	 * de procesos.
+ 	 */ 
 
-		/*  decremento el valor del semaforo */
+	proc_nr = (int) (mp - mproc);	
+
+	if (do_is_sem()) {
+
+		/* decremento el valor del semaforo */
 		semaforos[s].valor--;
 
-		if(val_sem(s) < 0 ) {
+		if(do_val_sem() < 0 ) {
 
 			/* Agrego el proceso a bloqueados */
-			do_add_bloq_proc(procID);
-
+			do_add_bloq_proc(proc_nr);
+						
 			/*  debo bloquear el proceso */
-			m.m1_i1 = procID;
-			_taskcall(SYSTASK, SYS_BLOCK, &m);
+			sys_block(proc_nr);	
 
 		}
 
@@ -148,114 +179,113 @@ PUBLIC int do_v_sem(void) {
 
 	message m;
 
-	register struct mproc *rmp = mp;
-
 	register struct semaf *sp = semaforos;
 
-	register pid procID;
-	register semaforo s = mp->SEMAFORO;
+	register int proc_nr;
+	semaforo s = mm_in.SEMAFORO;
 
-	if (is_sem(s)) {
+	if (do_is_sem()) {
 
 		/* incremento el valor del semaforo */
 		semaforos[s].valor++;
 
-		if(val_sem(s) >= 0 ) {
+		if(do_val_sem() <= 0 ) {
 
 			/* Busco si existe algun proceso bloqueado */
-			procID = do_get_next_bloq_proc();
+			proc_nr = do_get_next_bloq_proc();
 
-			if (procID > 0) {
+			if (proc_nr > 0) {
 
-				/* Existe un proceso bloqueado --> lo desbloqueo */
-				m.m1_i1 = procID;
-				_taskcall(SYSTASK, SYS_UNBLOCK, &m);
-
+				sys_unblock(proc_nr);
+		
 			}
 
 		}
 
+		return 0;
+
 	} else {
+
 		return -1;
+
 	}
 
 }
 
 /*===========================================================================*
- *				do_val_sem					     							 *
+ *			do_val_sem					     *
  *===========================================================================*/
 
 PRIVATE int do_val_sem(void) {
 
-	register struct mproc *rmp = mp;
-
 	register struct semaf *sp = semaforos;
 
-	register semaforo s = mp->SEMAFORO;
+	register semaforo s = mm_in.SEMAFORO;
 
 	return semaforos[s].valor;
 
 }
 
 /*===========================================================================*
- *				do_liberar_sem					     						 *
+ *			do_liberar_sem   				     *
  *===========================================================================*/
 
 PUBLIC int do_liberar_sem(void) {
 
 	message m;
 
-	register struct mproc *rmp = mp;
-
 	register struct semaf *sp = semaforos;
 
-	register semaforo s = mp->SEMAFORO;
+	pid_t procID = mproc[who].mp_pid;
+	semaforo s = mm_in.SEMAFORO;
 
 	int i;
 
-	if (is_sem(s)) {
+	/* se supone que no esta bloqueado */
 
-		/* Limpio la cola de procesos bloqueados */
-		for(i=semaforos[s].inicio_cola_bloq;i=<semaforos[s].fin_cola_bloq;i++) {
+	/* printf("es sem %d\n",do_is_sem()); */
 
-			/* por cada proceso ejecuto un syscall para desbloquearlo */
-			m.m1_i1 = semaforos[s].procBloqueados[i];
-			_taskcall(SYSTASK, SYS_UNBLOCK, &m);
+	if (do_is_sem()) {
 
-			/* borro el id de proceso que fue desbloqueado */
-			semaforos[s].procBloqueados[i] = 0;
+		semaforos[s].cant_proc--;
 
+		if (semaforos[s].cant_proc == 0) {
+		/* el semaforo no posee procesos asociados, se lo borra */
+		
+			do_init_sem();
+		
+		} else {
+		/* el semaforo sigue en uso, solo elimino la referencia al proceso */ 
+
+			for(i=0;i<MAX_PROC;i++) {
+
+				if (semaforos[s].procEnUso[i] == procID) {
+					semaforos[s].procEnUso[i] = 0;
+					break;
+				}
+			}
 		}
-
-		/* Limpio la lista de procesos */
-		for(i=0;i<MAX_PROC;i++) {
-
-			/* borro el id de proceso */
-			semaforos[s].procEnUso[i] = 0;
-		}
-
-		/* inicializo el semaforo */
-		do_init_sem();
+		return 0;
 
 	} else {
+
 		return -1;
+
 	}
 
 }
 
 /*===========================================================================*
- *			do_get_next_bloq_proc					     					 *
+ *			do_get_next_bloq_proc				     *
  *===========================================================================*/
 
 PRIVATE int do_get_next_bloq_proc(void) {
 
-	register struct mproc *rmp = mp;
-
 	register struct semaf *sp = semaforos;
 
-	register semaforo s = mp->SEMAFORO;
+	semaforo s = mm_in.SEMAFORO;
 
-	int r = 0
+	register int r = 0;
 
 	if (semaforos[s].inicio_cola_bloq != semaforos[s].fin_cola_bloq) {
 
@@ -267,7 +297,7 @@ PRIVATE int do_get_next_bloq_proc(void) {
 		r = semaforos[s].procBloqueados[semaforos[s].inicio_cola_bloq];
 
 		semaforos[s].inicio_cola_bloq++;
-    	semaforos[s].inicio_cola_bloq %= MAX;
+    		semaforos[s].inicio_cola_bloq %= MAX_PROC;
 
 	}
 	/* sino retorna 0 */
@@ -277,52 +307,74 @@ PRIVATE int do_get_next_bloq_proc(void) {
 }
 
 /*===========================================================================*
- *			do_add_bloq_proc						     					 *
+ *			do_add_bloq_proc				     *
  *===========================================================================*/
 
-PRIVATE void do_add_bloq_proc(int procID) {
-
-	register struct mproc *rmp = mp;
+PRIVATE void do_add_bloq_proc(int proc_nr) {
 
 	register struct semaf *sp = semaforos;
 
-	register semaforo s = mp->SEMAFORO;
+	semaforo s = mm_in.SEMAFORO;
 
 	semaforos[s].cant_proc++;
 
-	semaforos[s].procBloqueados[semaforos[s].fin_cola_bloq] = procID;
+	semaforos[s].procBloqueados[semaforos[s].fin_cola_bloq] = proc_nr;
 
 	semaforos[s].fin_cola_bloq++;
-   	semaforos[s].fin_cola_bloq %= MAX;
-
-	return 0;
-
+	semaforos[s].fin_cola_bloq %= MAX_PROC;
+	
 }
 
 
 /*===========================================================================*
- *				do_init_sem							     					 *
+ *				do_init_sem				   									 *
  *===========================================================================*/
 
-PRIVATE int do_init_sem(void) {
-
-	register struct mproc *rmp = mp;
+PRIVATE void do_init_sem(void) {
 
 	register struct semaf *sp = semaforos;
 
-	register semaforo s = mp->SEMAFORO;
+	register semaforo s = mm_in.SEMAFORO;
 
 	semaforos[s].semafEnUso = 0;
 
-	semaforos[s].valor 		= 0;
+	semaforos[s].valor 	= 0;
 	semaforos[s].cant_proc 	= 0;
 
 	semaforos[s].inicio_cola_bloq	= 0;
-	semaforos[s].fin_cola_bloq	 	= 0;
+	semaforos[s].fin_cola_bloq	= 0;
+
+}
+
+
+
+/*===========================================================================*
+ *				do_init_all_sem											     *
+ *===========================================================================*/
+
+PUBLIC int do_init_all_sem(void) {
+
+	int i, j;
+	register struct semaf *sp = semaforos;
+
+	for(i=0;i<MAX_SEM;i++) {
+
+		strcpy(semaforos[i].nombre,"");
+		semaforos[i].semafEnUso			= 0;
+		semaforos[i].valor 			= 0;
+		semaforos[i].cant_proc 			= 0;
+		semaforos[i].inicio_cola_bloq		= 0;
+		semaforos[i].fin_cola_bloq		= 0;
+
+
+		for(j=0;j<MAX_PROC;j++) {
+
+			semaforos[i].procBloqueados[j]	= 0;
+			semaforos[i].procEnUso[j] 	= 0;
+
+		}
 
 	}
-	/* sino retorna 0 */
 
-	return r;
-
+	return 0;
 }
