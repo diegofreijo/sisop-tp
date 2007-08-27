@@ -1,0 +1,21 @@
+a) Layout Minix
+b) Instamos Minix sobre una imagen .vhd.
+Esta fue creada con el entorno Virtua Pc 2004 de Microsoft. 
+La intensión era generar una imagen que pueda ser corrida en dicha aplicación dado que en sucesivos 
+intentos de instalación, el Minix acusaba un "File System Panic" y abortaba la misma.
+Se usó pues para la instalacion Qemu 4 con el Qemu Manager de Interfaz Gráfica. Sin embargo, esta
+versión presentó problemas al cargar el último disco de instalación y fue necesario utilizar la 
+versión que presenta la página de la materia para concluir exitosamente la misma. El resto de los
+puntos fueron desarrollados ìntegramente sobre el Qemu 4.
+
+Pásos para la instalación
+1_Bajar el Qemu 4 + Qemu Manager, versión para pendrives.
+
+http://www.davereyn.co.uk/qem/qemumanager40.zip
+
+2_(Opcional) Bajar el Virtual PC 2004 ( versión gratuita )
+
+3_ Pasos de instalación...
+
+
+
