@@ -1,0 +1,150 @@
+\subsection{Ejercicio 9}
+
+Los dispositivos de E/S pueden dividirse en 2 categorias: dispositivos tipo 
+bloque y dispositivos tipo caracter. Uno tipo bloque es el cual guarda 
+infomaci'on en bloques de tama'no fijo, cada uno con su propia direcci'on. Los 
+bloques comunes van del rango de los 128 bytes a los 1024 bytes. La propiedad 
+esencial de este tipo de dispositivo es hacer posible la lectura o escritura de 
+cada bloque independientemente de los otros. En otras palabas, instantaneamente 
+el programa puede leer o escribir cualquiera de sus bloques. Un ejemplo de ellos 
+son los discos.
+
+Los dispositivos de E/S tipo caracter entrega o acepta una cadena de caracteres, 
+sin respetar ninguna estructura de bloques. No es direccionable y no tiene 
+ning'un tipo de operaci'on de b'usqueda. La terminal, impresoras, cintas de 
+paepl, tarjetas perfordas, interfaces de red, mouses y muchos otros dipositivos 
+no que no son como discos pueden verse como dispositivos tipo caracter.
+Este modelo es en general suficiente para ser usado para hacer que el software 
+del S.O. pueda trabajar con dispositivos de E/S independientes. El file system, 
+por ejemplo, trabaja solo con dispositivos de bloques abstractos y deja la parte 
+dependiente del dispositivo a software de bajo nivel llamado drivers de 
+dispositivos.
+
+El trabajo de los drivers de dispositivos es aceptar pedidos abstractos de un 
+software independiente del dispositivo sobre 'el, y ver que el pedido sea 
+realizado.
+
+En MINIX, para cada clase de dispositivo de E/S, esta presente una tarea de E/S 
+(I/O task) o driver de dispositivo.  Estos drivers son procesos terminados, cada 
+uno con su propio estado, mapa de memoria y m'as. Estos driverse se comunican 
+entre si, si es necesario,  con el file system usando el mecanismo de pasaje de 
+mensajes estandar usado por todos los procesos de MINIX. Adem'as, cada driver de 
+dispositivo esta escrito en un solo archivo fuente, como floppy.c o clock.c. La 
+'unica diferencia entre los drivers y otros procesos es que los primeros estas 
+linkeados con el kernel, y comparten todo el espacio de de direccionamiento.
+
+El programa principal para cada driver de dispositivo tipo bloque es 
+estructuralmente el mismo. Posee un ciclo infinito, el cual espera la llegada de 
+un mensaje invocandolo. Si esto sucede, se llamará a la operación del tipo 
+entregado por el mensaje.
+
+La estructura es la siguiente:     
+
+\begin{verbatim}
+
+message mess;                       /* buffer del mensaje */
+
+void io_task() {
+    initialize();                   /* solo se inicializa una vez */
+    while(TRUE){
+        receive(ANY, &mess);        /* espera a un pedido de trabajo */
+        caller = mess.source;       /* proceso desde donde vino el mensaje */
+        switch(mess.type){
+            case READ: rcode = dev_read(&mess);break;
+            case WRITE: rcode = dev_write(&mess);break;
+            /* Other cases go here, e.g., OPEN, CLOSE, IOTCTL */
+            default: rcode = ERROR;
+        }
+        mess.type = TASK_REPLY;
+        mess.status = rcode;        /* respuesta */
+        send(caller, &mess);        /* Se envia respuesta al proceso llamador */
+    }                                  
+}
+
+\end{verbatim}
+                                    
+Cuando el sistema inicia, cada uno de los drivers se inicializa para definir 
+datos internos como tablas y similares cosas. Cada task intenta recibir un 
+mensaje. Cuando alguno llega, se graba la identidad del llamador, y se ejecuta 
+un procedimiento en particular para realizar el trabajo. Luego de finalizado, 
+una respuesta es enviada al llamador, y el task vuelve a el tope del ciclo 
+esperando un nuevo pedido.
+
+
+Para generar un driver de dispositivo tipo bloque hay que hacer lo siguiente:
+
+\begin{enumerate}
+\item hay que alterar el /usr/include/minix/com.h. Este archivo es el que guarda el 
+id de cada uno de los I/O task. Este id es llamado "major number" del 
+dispositivo. Este n'umero especifica la clase de dispositivo, como los floppy, 
+disco r'igido, o terminal. 
+Todos los dispositivos con el mismo "major number" comparten el mismo codigo de 
+driver dentro del S.O.
+
+\item luego hay que alterar /usr/include/minix/config.h para determinar cuales son 
+los dispositivos con los cuales el kernel va a ser compilado. Incluir todos 
+estaria mal. Esto es para que sea m'as facil excluir el nuevo dispositivo. 
+
+\item alterar el /usr/include/minix/const.h Se encarga de las constantes usadas por 
+el MINIX. Se la usa para agregar en nuevo proceso a las NR\_TASKS. Setea el 
+numero de las tareas predefinidas del kernel incluyendo los drivers de 
+dispositivo. 
+
+\item /usr/src/kernel/proto.h Hay que incluir el header o prototipo de la llamada 
+al driver. Eso es, predefinir el punto de entrada del nuevo driver. Este punto 
+es la primer funci'on que se ejecuta en el driver, como el main() es el punto de 
+entrada de un archivo de C.
+En el ejemplo, el task va a manejar un disco, se llamara en tal caso, 
+\verb0disco_task0.
+
+\begin{verbatim}
+PUBLIC _PROTOTYPE( void disco_task, (void) );
+\end{verbatim}
+
+\item /usr/src/kernel/table.c En este archivo debe existir una entrada para las 
+tasks. En ella se especifica el tama'no del stack que va a usar el nuevo driver. 
+
+\begin{verbatim}
+#define DISCO_STACK (4 * SMALL_STACK * ENABLE_DISCO)
+\end{verbatim}
+
+Adem'as se debe agregar dentro del struct tasktab una l'inea donde se relacionan 
+el task(el nombred del driver), la pila y el programa del driver propiamente 
+dicho en ese orden.
+
+\begin{verbatim}
+#if ENABLE_DISCO
+
+{ disco_task, DISCO_STACK , "DISCO" },
+
+#endif                 
+\end{verbatim}
+
+Donde \emph{DISCO} es el nombre del proceso.
+
+\item \verb0/usr/src/kernel/table.c0 Tambi'en hay que agregar a este archivo una entrada 
+para el nombre de la task en particular. Hay que agregar un archivo especial, en 
+nuestro caso "DISCO" en /dev y ligar el proceso del nuevo driver con 'el. 
+La nueva l'inea se agrega en el struct dmap. (como muesta se agrega el 
+encabezado que aparece en el fuente ).
+
+\begin{verbatim}
+?    Open        Read/Write  Close       Task #      Device  File
+-    ----        ----------  -----       -------     ------  ----
+
+DT(1, dev_opcl,   call_task,  dev_opcl,   DISCO)      /* 7 = /dev/disco */
+\end{verbatim}
+
+
+\item Hay que generar el driver mismo. Depende de que es lo que maneje, la 
+estructura del mismo. Para el ejemplo citado, el archivo se llamará disco.c y se 
+encontrará en la ruta \verb0/usr/src/kernel/disco.c0
+
+\item Es necesario alterar el Makefile del kernel para que el nuevo driver sea 
+compilado con 'el.                        
+
+\item Hay que generar el iNodo:
+
+\verb0mknod /dev/disco Flags MayorNumber MinorNumber\verb0
+
+\end{enumerate}
