@@ -1,0 +1,79 @@
+\subsection{Ejercicio 8}
+En MINIX tenemos las siguientes caracter'isticas:
+\begin{itemize}
+\item Administraci'on de la memoria: se maneja por pol'itica de memoria segmentada variable con primera zona. Es decir, se asigna el primer lugar donde exista el espacio necesario. 
+\item Administraci'on del procesador: la administraci'on de MINIX es una triple cola de prioridad (es decir, es una multicola) donde se utiliza FIFO para la del Kernell (de mayor prioridad), FIFO para la de System Tasks como el MM y FS (de prioridad menor) y Round Robin para las colas del usuario (prioridad 'ultima).
+\item Administraci'on de E/S: en la 1er capa (la de drivers) hay un proceso (driver) por cada dispositivo en el sistema. Cuando un proceso de usuario quiere acceder a un dispositivo, 'este lo realiza a travez de la 2da capa por alguno de los servicios alli expuestos (MM, FS o red) y 'estos se comunican con los drivers a travez de mensajes (los cuales se comunican con el kernell en la capa 0 por otros mensajes).
+\item Administraci'on de FS: el sistema de archivos de MINIX posee seis componentes:
+
+\begin{itemize}
+\item El bloque de booteo, que esta siempre almacenado en el primer bloque. Contiene la informaci'on sobre como iniciar el sistema al encenderse.
+\item El segundo bloque es el Superbloque y almacena informacion sobre el FS que permite al SO localizar y entender otras estructuras de sistemas de archivos (n'umero de inodos y zonas, el tama'no de dos bitmaps y el bloque de inicio del 'area de informaci'on).
+\item El bitmap de inodo es un simple mapa de inodos que localiza cuales est'an en uno y cuales est'an libres represent'andolos con un bit. 
+\item El bitmap de zona trabaja de la misma forma que el bitmap de inodo, excepto que localiza las zonas.
+\item Los inodos de 'area. Cada archivo o directorio est'a representado como un inodo, el cual almacena metadata incluyendo tipo (archivo, directorio, bloque, char, pipe), ids de usuario y grupo, tres timestamps que graban la fecha y hora de 'ultimo acceso, 'ultima modificaci'on y 'ultimo cambio de estado. Un inodo adem'as contiene una lista de direcciones que apuntan a las zonas en el 'area de informaci'on donde el archivo o directorio es'ta ubicado.
+\item El 'area de datos es el componente mas grande del sistema de archivos, usando la mayor'ia del espacio. 
+\end{itemize}
+
+\end{itemize}
+
+
+Y en LINUX tenemos lo siguiente:
+\begin{itemize}
+\item Administraci'on de la memoria: utiliza paginaci'on por demanda, por lo que brinda:
+
+\begin{itemize}
+\item Grandes espacios de direccionamiento
+El sistema operativo hace aparentar al sistema como si tuviese mas memoria que la que realmente tiene. La memoria virtual puede ser varias veces mas grandes que la memoria fisica en el sistema.
+
+\item Protecci'on
+Cada proceso en el sistema tiene su propio espacio de direccionamiento. 'Estos est'an completamente separados entre s'i y por eso un proceso corriendo una aplicacion no puede afectar otro. Adem'as, los mecanismos de  hardware de memoria virtual permite que 'areas de memoria sean protegidas contra escritura para proteger el c'odigo y los datos de ser sobre escritos por otras aplicaciones. 
+
+\item Mapeo de memoria
+El mapeo de memoria es usado para mapear archivos al espacio de direccionamiento de un proceso. Es decir, los contenidos de un archivo son enlazados directamente en el espacio de direccionamiento virtual del proceso.
+
+\item Asignaci'on justa de la memoria f'isica
+El subsistema de administraci'on de memoria le permite obtener a cada proceso en ejecuci'on en el sistema una parte justa de la memoria f'isica.
+
+\item Memoria virtual compartida
+Although virtual memory allows processes to have separate (virtual) address spaces, there are times when you need processes to share memory. For example there could be several processes in the system running the bash command shell. Rather than have several copies of bash, one in each processes virtual address space, it is better to have only one copy in physical memory and all of the processes running bash share it. Dynamic libraries are another common example of executing code shared between several processes. 
+Shared memory can also be used as an Inter Process Communication (IPC) mechanism, with two or more processes exchanging information via memory common to all of them. Linux supports the Unix TM System V shared memory IPC. 
+
+A pesar que memoria virtual permite a los procesos tener separados espacios (virtuales) de direccionamiento, hay veces que necesitan compartir memoria (por ejemplo, librer'ias din'amicas). Por lo que, en lugar de duplicar datos, se utiliza un mecanismo de comunicaci'on entre procesos (IPC) para que dos o m'as procesos intercambien informaci'on a trav'ez de memoria en com'un. El soporte en Linux se llama TM System V shared memory IPC. 
+\end{itemize}
+
+\item Administraci'on del procesador: se basa en una pol'itica Round-Robin (en su nomenclatura, \emph{time-sharing technique}) donde para cada proceso existe una cuota de tiempo (quantum, o tambi'en llamado \emph{timeslice}) que puede utilizar del procesador por 'epoca. Al comienzo de cada 'epoca, el timeslice es recomputado por proceso y cada uno de ellos podr'a utilizar el procesador 'este tiempo asignado a cada uno durante la 'epoca. Notar que si un proceso utiliza demasiadas E/S y por ende no consume todo su timeslice al final de la 'epoca, 'este sobrante es agregado en la pr'oxima 'epoca.
+%%%%%%%%%5
+
+\item Administraci'on de E/S: 
+Linux soporta tres tipos de dispositivo de hardware: caracter, bloque y red. Los dispositivos en modo caracter se leen y se escriben directamente sin buffering, por ejemplo los puertos seriales /dev/cua0 y /dev/cua1 del sistema. Los dispositivos en modo bloque pueden ser solamente escritos le'idos en en los m'ultiplos del tama'no de bloque, de t'ipicamente 512 o 1024 bytes. Los dispositivos en modo bloque son accedidos por el buffer y sede forma aleatoria, es decir, cualquier bloque puede ser le'ido o ser escrito no importa d'onde est'a en el dispositivo. Los dispositivos en modo bloque se pueden acceder v'ia un archivo especial del dispositivo pero se suele utilizar el sistema de archivos. Solamente un dispositivo en modo bloque puede soportar un sistema de archivos montado. Los dispositivos de la red son accedidos a trav'ez de los subsistemas de red.
+
+Hya muchos y diferentes drivers de dispositivos en el kernell de Linux, lo cual es una de sus fuerzas, pero todos comparten algos atributos en com'un:
+
+\begin{itemize}
+\item C'odigo de kernell
+Los drivers son parte del kernell y, como todo otro c'odigo en el kernell, si funciona mal puede dañar el sistema incluso perdiendo informaci'on del FS.
+
+\item Interfaces del kernell
+Los drivers deben prooveer una interfaz est'andar al kernell de Linuz o al subsistema del que son parte.
+
+\item Mecanismos del kernell y servicios
+Los drivers usan los servicios est'andar del kernell como administraci'on de memoria, manejo de interrupciones y colas de espera para operar.
+   
+\item Cargable
+Muchos drivers pueden ser cargados a demanda como modulos del kernell cuando son necesitados y descargados cuando no son m'as usados. 'Esto hace al kernell flexible y eficiente con los recursos.
+
+\item Configurable
+Los drivers pueden ser construidos en el kernell, y se puede configurar cuales cuando se compila el kernell.
+
+\item Din'amico
+Mientras es sistema bootea y cada driver es inicializado, 'este mira por cada dispositivo que est'a controlando. No importa si el dispositivo que se est'a controlando por un dispositivo en particular no existe. En 'este caso el driver es simplemente redundante y no causa ning'un da'no aparte de ocupar un poquito de memoria del sistema.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+
+\item Administraci'on de FS: por el momento, Linux soporta 15 sistemas de archivo: ext, ext2, xia, minix, umsdos, msdos, vfat, proc, smb, ncp, iso9660, sysv, hpfs, affs y ufs. Aunque el principal, en principio (1992), era ext 'este carecia de buen rendimiento. Por eso es que fue reemplazado por ext2 en 1993. 'Este sistema, como muchos otros, es construido en la premisa que la informaci'on en los archivos es conservada en bloques. 'Estos bloques son todos de la misma longitud y, a pesar que la longitud puede variar entre diferentes sistemas EXT2, el tama'no del bloque de un sistema particular es establecido cuando es creado. Cada tama'no de archivo es redondeado hacia arriba hasta un n'umero entero de bloques. Si el tama'no de bloque es de 1024 bytes entonces un archivo de 1025 bytes ocupar'a 2 bloques. Desafortunadamente esto significa que en promedio se desperdicia la mitad de un bloque por archivo. Pero para favorecer el desempe'no del CPU 'este ineficiente \emph{tradeoff} es utilizado. No todos los bloques en el FS contienen informaci'on, algunos deben ser usados para contener la informaci'on que describe la estructura del sistema de archivos. EXT2 define la topolog'ia del sistema describiendo cada archivo en el sistema con una estrucuta de datos inodo. Un inodo describe que bloques de informaci'on dentro de un archivo ocupa al igual que los derechos de acceso del archivo, las veces que se modific'o y el tipo de archivo. Cada archivo en el FS EXT2 es descripto por un 'unico inodo y cada inodo tiene un 'unico n'umero identific'andolo. Los inodos para el sistema de archivos estan contenidos en tablas de inodos. Los directorios EXT2 son simples archivos especiales (descriptos como inodos) que contienen punteros a los inodos de sus entradas dentro del directorio.
+\end{itemize}
+
+
+Notar que ambos sistemas operativos poseen ciertas peque'nas similitudes como los inodos en el sistema de archivos y round robin para los procesos de usuario, pero varias caracter'isticas transforman a Linux en un sistema de producci'on a diferencia de Minix que se l'imita bastante. Por ejemplo, el tama'no m'aximo de los archivos en Minix (64MB) hace que no pueda ejecutar aplicaciones tales como una base de datos decente de hoy en d'ia, y ni hablar de archivos multimedia grandes como pel'iculas. Adem'as, la administraci'on de memoria de Minix es muy rudimentaria, sin pr'acticamente protecci'on asegurada y con un espacio de direcciones limitado a la memoria f'isica, a diferencia de Linux que posee memoria virtual a trav'ez de memoria paginada con todas las ventajas que se describieron como la proteccion y el espacio mayor de direcci'on. Es por eso que no sorprende la cantidad de actualizaciones que recibi'o Linux (al igual que su popoularidad) y el uso did'actico que se le d'a a Minix (debido a la simpleza de sus administraciones).

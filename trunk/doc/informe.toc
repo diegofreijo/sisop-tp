@@ -36,12 +36,12 @@
 \contentsline {subsection}{\numberline {1.6}Ejercicio 6: Ejecuci'on de procesos en Background}{16}
 \contentsline {subsection}{\numberline {1.7}Ejercicio 7}{18}
 \contentsline {subsection}{\numberline {1.8}Ejercicio 8}{18}
-\contentsline {subsection}{\numberline {1.9}Ejercicio 9}{18}
-\contentsline {subsection}{\numberline {1.10}Ejercicio 10: Modificaci'on de c'odigos}{18}
-\contentsline {subsubsection}{\numberline {1.10.1}Modique el "scheduler"\ original del MINIX para el nivel de usuarios}{19}
-\contentsline {subsubsection}{\numberline {1.10.2}Modifique la administraci'on de memoria original del MINIX}{20}
-\contentsline {subsection}{\numberline {1.11}Ejercicio 11}{22}
-\contentsline {subsubsection}{\numberline {1.11.1}Pruebas}{22}
-\contentsline {subsection}{\numberline {1.12}Ejercicio 12}{23}
-\contentsline {section}{\numberline {2}Ap'endice A}{24}
-\contentsline {section}{\numberline {3}Referencias}{27}
+\contentsline {subsection}{\numberline {1.9}Ejercicio 9}{22}
+\contentsline {subsection}{\numberline {1.10}Ejercicio 10: Modificaci'on de c'odigos}{24}
+\contentsline {subsubsection}{\numberline {1.10.1}Modique el "scheduler"\ original del MINIX para el nivel de usuarios}{25}
+\contentsline {subsubsection}{\numberline {1.10.2}Modifique la administraci'on de memoria original del MINIX}{26}
+\contentsline {subsection}{\numberline {1.11}Ejercicio 11}{27}
+\contentsline {subsubsection}{\numberline {1.11.1}Pruebas}{28}
+\contentsline {subsection}{\numberline {1.12}Ejercicio 12}{28}
+\contentsline {section}{\numberline {2}Ap'endice A}{29}
+\contentsline {section}{\numberline {3}Referencias}{32}
