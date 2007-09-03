@@ -1,4 +1,90 @@
-a) Layout Minix
+a) Layout Minix (LayoutMinix.png)
+
+Kernel	
+SYS_FORK	Informa al kernel que un proceso es forkeado
+SYS_NEWMAP	Permite al Memory Manager setear una porción de memoria para un proceso
+SYS_GETMAP	Permite al Memory Manager tomar una porción de memoria de un proceso
+SYS_EXEC	Setea el contador de programa y el puntero al stack luego de realizar un EXEC
+SYS_XIT	Informa al kernel que un proceso ha terminado
+SYS_GETSP	El llamador pide un el puntero al stack de un proceso
+SYS_TIMES	El llamador pide contar las veces de un proceso
+SYS_ABORT	Si el File System o el Memory Manager no pueden continuar. Aborta Minix
+SYS_FRESH	Empieza con una imagen de proceso nueva durante EXEC
+SYS_SENDSIG 	Envia una señal a un proceso
+SYS_SIGRETURN 	Señalización estilo POSIX
+SYS_KILL	Mata un proceso, señal enviada via Memory Manager
+SYS_ENDSIG	Finaliza luego de una señal KILL
+SYS_COPY	Pide un bloque de datos para ser copiado entre procesos
+SYS_VCOPY   	Pide una serie de bloques de datos para ser copiados entre procesos
+SYS_GBOOT	Copia el parámetro de booteo al un proceso
+SYS_MEM	Retorna el próximo bloque libre de memoria física
+SYS_UMAP	Computa la direccion física de una dirección virtual.
+SYS_TRACE	Retorna una operación de traza
+	
+	
+Memory Manager	
+FORK	Crea un nuevo proceso
+EXIT	Termina un proceso
+WAIT	Detiene un proceso a la espera de una señal
+WAITPID	Detiene un proceso a la espera de una señal
+BRK	Cambia el tamaño del segmento data
+EXEC	Ejecuta un archivo
+KILL	Envia señal a proceso, usualmente para matar al proceso
+ALARM	Programa señal luego de un tiempo especificado
+PAUSE	Detiene hasta señal
+SIGACTION	Administra las señales
+SIGSUSPEND	Suspende hasta señal
+SIGPENDING	Reporta pendientes de señal
+SIGMASK	Manipula la máscara de las señales
+SIGRETURN	Se ejecuta cuando el MM termina manejo de señales. Sirve para restablecer contextos.
+GETUID	Retorna id del usuario
+GETGID	Retorna id del grupo
+GETPID	Retorna id del proceso
+SETUID	Setea id del usuario
+SETGID	Setea id del grupo
+SETSID	Crea una nueva sesión de un proceso
+GETPGRP	Retorna el id del grupo del proceso
+PTRACE	Traza del proceso
+REBOOT	Apaga el sistema o reinicia
+KSIG	Acepta señal que se origina en el Kernel
+	
+File System	
+ACCESS	Determina accesibilidad hacia un archivo
+CHDIR	Cambia el directorio del trabajo actual
+CHMOD	Cambia el modo de un archivo
+CHOWN	Cambia el dueño de un archivo
+CHROOT	Cambia el directorio del usuario root
+CLOSE	Borra un descriptor
+CREAT	Crea un nuevo archivo
+DUP	Duplica un descriptor
+FCNTL	Ejecuta varias funciones relacionadas con el archivo descriptor
+FSTAT	Retorna estado de un archivo abierto
+IOCTL	Ejecuta varias funciones relacionadas con archivos especiales de tipo carácter ( como son las terminales )
+LINK	Crea un link a un archivo
+LSEEK	Mueve puntero de lectura/escritura
+MKDIR	Crea un directorio
+MKNOD	Crea un nuevo inodo
+MOUNT	Monta un file system
+OPEN	Abre un archivo para lectura o escritura o crea un nuevo archivo
+PIPE	Crea un canal de comunicación entre procesos
+READ	Lee entrada
+RENAME	Renombra un archivo
+RMDIR	Remueve un directorio
+STAT	Retorna estado de la ruta de un archivo
+STIME	Setea fecha y hora
+SYNC	Actualiza buffers sucios y super-bloques
+TIME	Obtiene fecha y hora
+TIMES	Retorna información relacionada con los tiempos de un proceso
+UMASK	Setea la máscara de un archivo de un proceso
+UMOUNT	Desmonta un file system
+UNLINK	Remueve una entrada de directorio
+UTIME	Actualiza información relacionada con los tiempos de un proceso
+WRITE	Escribe salida
+UNPAUSE	Envía señal a proceso para ver si está suspendido
+REVIVE	Marca un proceso suspendido como ejecutable
+
+
+
 b) Instamos Minix sobre una imagen .vhd.
 Esta fue creada con el entorno Virtua Pc 2004 de Microsoft. 
 La intensión era generar una imagen que pueda ser corrida en dicha aplicación dado que en sucesivos 
@@ -13,9 +99,61 @@ Pásos para la instalación
 
 http://www.davereyn.co.uk/qem/qemumanager40.zip
 
-2_(Opcional) Bajar el Virtual PC 2004 ( versión gratuita )
+2_Bajar e instalar el Microsoft Virtual PC 2004 ( versión gratuita )
 
-3_ Pasos de instalación...
+3_Microsoft Virtual PC -> Archivo -> Asistente para disco virtual -> Siguiente ->
+Crear un nuevo equipo virtual -> Un disco duro virtual -> Setear nombre y ubicación ->
+Tamaño Fijo -> Setear tamaño 80MB -> Finalizar.
+
+4_Qemu Manager 4 -> (+) Crear una nueva máquina virtual -> Setear nombre de máquina virtual ->
+Sistema Operativo: "Linux Distribution", RAM requerida 4MB -> Checkear "Usar unidad virtual existente" 
+-> Seleccionar la imagen creada en 3_ -> Salvar maquina virtual.
+
+5_Opcional (crear máquina virtual en Virtual PC ) -> Asistente para nuevo equipo virtual ->
+Crear un nuevo equipo virtual -> Setear nombre y ubicación -> Setear Sistema Operativo: "Otro" ->
+Ajustar RAM: 4MB -> Utilizar un disco virtual existente  -> Seleccionar la imagen creada en 3_ ->
+Finalizar
+
+6_Usar el archivo 144M.dsk proveido por la cátedra. Configurar máquina virtual 
+(doble click en máquina creada en 4_) -> Configuración de disco -> Disco Floppy A: (fda), 
+selecionar 144M.dsk -> Checkear: "Bootear desde disco floppy" -> Lanzar maquina virtual.
+
+7_Ingresar "=" en monitor de Minix.
+
+8_Ingresar usuario root.
+
+9_Modificar el archivo setup: mined /usr/bin/setup 
+Reemplazar líneas:
+	root = ${primary}a
+	usr  = ${primary}c
+Por
+	root = hd1
+	usr  = hd2
+	
+10_Ejecutar Setup -> seleccionar layout -> select device, presionar "q" (no modifica nada) ->
+seleccionar hd0 -> Seleccionar las particiones de hd1 y hd2 -> Enter.
+
+11_Finalizada la instalacion, apagar la máquina virtual -> Deschequear: "Bootear desde disco floppy"
+
+
+12_con el comando partir, generar las imagenes de USR.TAZ, SYS.TAZ Y CMD.TAZ. 
+En línea de comando ejecutar en el directorio donde estan los archivos y el ejecutable:
+partir [u] usr.taz
+partir [s] sys.taz
+partir [c] cmd.taz
+Ubicar los archivos generados en carpeta media del Qemu
+
+13_Reiniciar máquina virtual. 
+
+14_Con ctrl+alt+2 se abre consola de Qemu. change fda u1.img.
+Con ctrl+alt+1 se vuelve a Minix.
+
+15_Ejecutar setup /usr. Repetir 14 para cada vez que se pida el siguiente disco.
+
+16_Repertir 14 y 15 para s1.img y con c1.img
+Nota: La instalación de archivo cmd.taz nunca se pudo completar con la versión de Qemu usada. 
+Se intentó varias veces con resultados adversos. Se utilizó el Qemu proveido por la cátedra 
+para la instalación de este archivo.
 
 
 

@@ -1,20 +1,50 @@
+11)
 Cambios para ejercicio 11
 
 /usr/include/minix/callnr.h
 Se incrementó en 1 el define NCALLS
 Se agregó #define LLAMSISTEMA con el nro correspondiente 
 
+/usr/src/mm/proto.h
+Se agrega linea:
+
+_PROTOTYPE( int do_llamsistema, (void)	);
+
+
 /usr/src/mm/table.c 
+Se agrega linea:
+
+do_llamsistema, 	/* 79 = LLAMSISTEMA */
+
+
+/usr/src/fs/table.c 
+Se agrega linea:
+
+no_sys, 		/* 79 = LLAMSISTEMA */
+
+
+Recompilar kernel
+
+
+Se crea 
+/usr/src/mm/llamsistema.c (archivo source)
+Se actualiza Makefile de /usr/src/mm para incluirlo.
+
+Se crea  
+/usr/src/lib/syscall/llamsistema.s (archivo source)
+Se actualiza Makefile de /usr/src/lib/syscall para incluirlo.
+
+Se crea
+/usr/src/lib/posix/_llamsistema.c (archivo source)
+Se actualiza Makefile de /usr/src/lib/posix para incluirlo.
+
+Ejecutar
+
+# ./usr/src/lib/make all
+# ./usr/src/lib/make install
 
 
 Nota: no se usó el nombre pedido x la cátedra (newcall), ya que este fue usado para otras pruebas. Se realizó una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente. 
-El el mismo directorio el newcall.c y el othercall.c son source para probar dichas funciones
-./newcall
-./othercall
-
-Tienen la misma funcionalidad que ./llam 1
-
-
 
 Pruebas ejercicio 11
 
@@ -39,6 +69,10 @@ Para las opciones 3, 4 y 5, para verificar la correctitud de la misma se agregó 
 Al ejecutar el programa con algunas de estas opciones, al presionar F2 veremos la informacion de los segmentos correspondientes.
 Para matar al proceso, abrimos otra consola, ejecutamos ps para ver el nro del mismo y con el comando kill [nro proc] lo eliminamos.
 
+El el mismo directorio el newcall.c y el othercall.c son source para probar dichas funciones
+./newcall
+./othercall
 
-
+Tienen la misma funcionalidad que ./llam 1
+newcall utiliza la información del mm (igual que LLAMSISTEMA) para averiguar el pid y othercall, el fs.
 
