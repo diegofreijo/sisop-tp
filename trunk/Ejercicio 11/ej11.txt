@@ -3,7 +3,7 @@ Cambios para ejercicio 11
 
 /usr/include/minix/callnr.h
 Se incrementó en 1 el define NCALLS
-Se agregó #define LLAMSISTEMA con el nro correspondiente 
+Se agregó #define LLAMSISTEMA con el nro correspondiente
 
 /usr/src/mm/proto.h
 Se agrega linea:
@@ -11,30 +11,40 @@ Se agrega linea:
 _PROTOTYPE( int do_llamsistema, (void)	);
 
 
-/usr/src/mm/table.c 
+/usr/src/mm/table.c
 Se agrega linea:
 
 do_llamsistema, 	/* 79 = LLAMSISTEMA */
 
 
-/usr/src/fs/table.c 
+/usr/src/fs/table.c
 Se agrega linea:
 
 no_sys, 		/* 79 = LLAMSISTEMA */
 
-
-Recompilar kernel
-
-
-Se crea 
+Se implementa system call en:
 /usr/src/mm/llamsistema.c (archivo source)
 Se actualiza Makefile de /usr/src/mm para incluirlo.
 
-Se crea  
+Se agrega la linea al archivo
+/usr/include/minix/com.h
+
+#define OPC_NEWCALL		mi_i1
+
+Para renombrar el parámetro que se usa para la elección de la consulta que se hace por medio del system call.
+
+Se recompila kernel
+
+Ejecutar
+
+# /usr/src/tools/make install
+# /usr/src/tools/make hdboot
+
+
+Se crean archivos para poder llamar el system call desde una librería y cumplir el standard posix:
 /usr/src/lib/syscall/llamsistema.s (archivo source)
 Se actualiza Makefile de /usr/src/lib/syscall para incluirlo.
 
-Se crea
 /usr/src/lib/posix/_llamsistema.c (archivo source)
 Se actualiza Makefile de /usr/src/lib/posix para incluirlo.
 
@@ -44,7 +54,7 @@ Ejecutar
 # ./usr/src/lib/make install
 
 
-Nota: no se usó el nombre pedido x la cátedra (newcall), ya que este fue usado para otras pruebas. Se realizó una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente. 
+Nota: no se usó el nombre pedido x la cátedra (newcall), ya que este fue usado para otras pruebas. Se realizó una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente.
 
 Pruebas ejercicio 11
 
@@ -55,7 +65,7 @@ En imagen minix para ejercicio 11
 
 Modo de prueba
 
-./llam [opcion] 
+./llam [opcion]
 
 Opcion es del 1 al 5
 

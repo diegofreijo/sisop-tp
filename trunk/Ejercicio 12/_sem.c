@@ -9,6 +9,7 @@
 #define p_sem		_p_sem
 #define v_sem 		_v_sem
 #define liberar_sem	_liberar_sem
+#define inicializar _inicializar
 
 semaforo crear_sem(char* nombre, int valor) {
 
@@ -92,7 +93,7 @@ int liberar_sem(semaforo x) {
 void inicializar() {
 
 	message m;
-	
+
 	_syscall(MM, INIT_ALL_SEM, &m);
 
 	return 0;
