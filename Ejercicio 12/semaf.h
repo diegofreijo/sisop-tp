@@ -1,5 +1,5 @@
-#define MAX_SEM 	10	
-#define MAX_PROC 	10
+#define MAX_SEM 	100	
+#define MAX_PROC 	100
 
 #include <minix/type.h>
 

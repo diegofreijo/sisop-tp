@@ -33,21 +33,22 @@ PUBLIC int do_crear_sem(void) {
 
 	i = 0;
 
-	/* printf("este es el proc en crear %d\n",procID); */	
+	/* printf("este es el proc en crear %d\n",procID); */
 
-	
+
 	for(i=0;i<MAX_SEM;i++) {
 		/* Busco si el nombre corresponde a un semaforo ya creado */
-		if (strcmp(semaforos[i].nombre, nombre)) {
+		if (!strcmp(semaforos[i].nombre, nombre)) {
+			/* printf("semaforo encontrado!!\n"); */
 			break;
 		}
 	}
 
 	/* i se incrementa en uno mas, no se xq, entonces lo decremento */
-	
-	if ( i > 0 ) {
+
+	if ( i < MAX_SEM ) {
 		/* Si el semaforo ya existe lo selecciono */
-		s = --i;
+		s = i;
 
 	} else {
 		/* Sino busco el primer semaforo sin uso */
@@ -55,10 +56,10 @@ PUBLIC int do_crear_sem(void) {
 			if (semaforos[i].semafEnUso == 0) {
 
 				s = i;
-				/* Defino el semaforo */ 
-				 
+				/* Defino el semaforo */
+
 				strcpy(semaforos[s].nombre, nombre);
-				semaforos[s].valor = valor; 
+				semaforos[s].valor = valor;
 				semaforos[s].semafEnUso = 1;
 				semaforos[s].cant_proc  = 0;
 				semaforos[s].inicio_cola_bloq = 0;
@@ -113,7 +114,7 @@ PRIVATE int do_is_sem(void) {
 	/* printf("el proc es: %d\n", procID); */
 
 	for(i=0;i<MAX_PROC;i++) {
-		/*	
+		/*
 		printf("proc en uso actual: %d\n", semaforos[s].procEnUso[i]);
 		*/
 		if (semaforos[s].procEnUso[i] == procID) {
@@ -138,13 +139,13 @@ PUBLIC int do_p_sem(void) {
 	register int proc_nr;
 	register semaforo s = mm_in.SEMAFORO;
 
-       /** 
-	 * Calculo la posicion del proceso en la tabla. 
+       /**
+	 * Calculo la posicion del proceso en la tabla.
 	 * Esta es el puntero al proceso menos el puntero a la lista
 	 * de procesos.
- 	 */ 
+ 	 */
 
-	proc_nr = (int) (mp - mproc);	
+	proc_nr = (int) (mp - mproc);
 
 	if (do_is_sem()) {
 
@@ -155,9 +156,9 @@ PUBLIC int do_p_sem(void) {
 
 			/* Agrego el proceso a bloqueados */
 			do_add_bloq_proc(proc_nr);
-						
+
 			/*  debo bloquear el proceso */
-			sys_block(proc_nr);	
+			sys_block(proc_nr);
 
 		}
 
@@ -197,7 +198,7 @@ PUBLIC int do_v_sem(void) {
 			if (proc_nr > 0) {
 
 				sys_unblock(proc_nr);
-		
+
 			}
 
 		}
@@ -236,35 +237,41 @@ PUBLIC int do_liberar_sem(void) {
 
 	register struct semaf *sp = semaforos;
 
+	register int proc_nr;
+
 	pid_t procID = mproc[who].mp_pid;
 	semaforo s = mm_in.SEMAFORO;
 
 	int i;
 
-	/* se supone que no esta bloqueado */
-
-	/* printf("es sem %d\n",do_is_sem()); */
-
 	if (do_is_sem()) {
 
 		semaforos[s].cant_proc--;
 
-		if (semaforos[s].cant_proc == 0) {
-		/* el semaforo no posee procesos asociados, se lo borra */
-		
-			do_init_sem();
-		
-		} else {
-		/* el semaforo sigue en uso, solo elimino la referencia al proceso */ 
+		if (semaforos[s].cant_proc > 0) {
+		/* si el semaforo posee procesos bloqueados los desbloquea */
+
+			for(i=semaforos[s].inicio_cola_bloq;i<=semaforos[s].inicio_cola_bloq;i++) {
+
+				proc_nr = semaforos[s].procBloqueados[i];
+				sys_unblock(proc_nr);
+
+			}
+
+		/* Luego elimino todos los procesos asociados referencia al proceso */
 
 			for(i=0;i<MAX_PROC;i++) {
 
-				if (semaforos[s].procEnUso[i] == procID) {
-					semaforos[s].procEnUso[i] = 0;
-					break;
-				}
+				semaforos[s].procEnUso[i] = 0;
+
 			}
+
 		}
+
+		/* finalmente inicializo el semaforo */
+
+		do_init_sem();
+
 		return 0;
 
 	} else {
@@ -287,7 +294,7 @@ PRIVATE int do_get_next_bloq_proc(void) {
 
 	register int r = 0;
 
-	if (semaforos[s].inicio_cola_bloq != semaforos[s].fin_cola_bloq) {
+	if (semaforos[s].inicio_cola_bloq != semaforos[s].inicio_cola_bloq) {
 
 		/* si existe algun proceso bloqueado lo elijo, y adelanto el inicio de la cola */
 
@@ -322,7 +329,7 @@ PRIVATE void do_add_bloq_proc(int proc_nr) {
 
 	semaforos[s].fin_cola_bloq++;
 	semaforos[s].fin_cola_bloq %= MAX_PROC;
-	
+
 }
 
 
