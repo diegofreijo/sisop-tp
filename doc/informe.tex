@@ -4,8 +4,8 @@
 \usepackage[spanish,activeacute]{babel}								% Idioma castellano
 \usepackage{caratula}														% Caratula de Algo2
 %\usepackage[a4paper=true,pagebackref=true]{hyperref}				% Agrega la TOC al PDF e hipervinculos
-%\usepackage[pdftex]{graphicx} 											% Permite insertar graficos
-%\usepackage{fancyhdr}														% Permite manejo de cabeceras de pagina
+\usepackage[pdftex]{graphicx} 											% Permite insertar graficos
+\usepackage{fancyhdr}														% Permite manejo de cabeceras de pagina
 \usepackage{eufrak}															% Usado en el enunciado del trabajo
 \usepackage{latexsym}
 %\usepackage{algorithmic}													% Para escribir los algos
@@ -29,7 +29,7 @@
 {
 	\begin{figure}[htbp]
 	  \centering
-%	    \includegraphics[scale=0.5]{#1}
+	    \includegraphics[scale=0.5]{#1}
 	  \caption{#3}
 	\end{figure}
 }
@@ -63,9 +63,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Caratula
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\materia{Algoritmos y Estructuras de Datos III}
+\materia{Sistemas Operativos}
 \submateria{Primer Cuatrimestre de 2007}
-\titulo{Trabajo Pr'actico}
+\titulo{Trabajo Pr'actico (parte I)}
 \subtitulo{}
 \integrante{Freijo, Diego}{4/05}{giga.freijo@gmail.com}
 \integrante{Giusto, Maximiliano}{486/05}{maxi.giusto@gmail.com}
@@ -83,7 +83,7 @@ Minix, Kernell, Memoria, Perifericos, Drivers
 \newpage
 
 \section{Soluciones}
-\subsection{Ejercicio 1}
+\input{ejercicio1.tex}
 \subsection{Ejercicio 2: Herramientas}
 
 Indique que hace el comando make y mknode. C'omo se utilizan 'estos comandos en la instalaci'on de MINIX y en la creaci'on de un nuevo kernel. Para el caso del make muestre un archivo ejemplo y explique que realiza cada uno de los comandos internos del archivo ejemplo.
@@ -809,8 +809,7 @@ las siguientes columnas:
 \end{itemize}
 
 
-\subsection{Ejercicio 7}
-
+\input{ejercicio7.tex}
 \input{ejercicio8.tex}
 \input{ejercicio9.tex}
 
