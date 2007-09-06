@@ -1,0 +1,496 @@
+\subsection{Ejercicio 3: Comandos b'asicos MINIX/UNIX}
+\subsubsection{Pongale password root a root.}
+
+Utilizando el comando passwd:
+
+\begin{verbatim}
+    # passwd
+    Changing the shadow password of root
+    New password:
+    Retype password:
+    # exit
+    Minix Release 2.0 Version 0
+    noname login: root
+    Password:
+    #
+\end{verbatim}
+
+\subsubsection{pwd}
+
+Indique qué directorio pasa a ser su $current\ directory$ si ejecuta:
+
+\subsubsubsection{1.3.2.1. $\sharp$ cd /usr/src}
+
+\begin{verbatim}
+    # cd /usr/src
+    # pwd
+    /usr/src
+\end{verbatim}
+
+Utilizando el comando \textbf{pwd} podemos ver en que directorio nos encontramos. En 'este caso el $current\ directory$ es \textbf{/usr/src}.
+
+\subsubsubsection{1.3.2.2. $\sharp$ cd}
+
+\begin{verbatim}
+    # cd
+    # pwd
+    /
+    #
+\end{verbatim}
+
+Nuevamente utilizamos el comando \textbf{pwd} y el directorio actual es \textbf{/}.
+
+\subsubsubsection{1.3.2.3. ¿C'omo explica el punto 1.3.2.2.?}
+
+Ejecutar el comando \textbf{cd} sin argumentos cambia el directorio actual al directorio home del usuario. Para el usuario root 'este directorio es el directorio ra'iz del sistema.
+
+\subsubsection{cat}
+
+Cu'al es el contenido del archivo \textbf{/usr/src/.profile} y para qu'e sirve.
+
+\begin{verbatim}
+    # cat /usr/src/.profile
+    # Login shell profile.
+    
+    # Environment.
+    umask 022
+    PATH=/usr/local/bin:/bin:/usr/bin
+    PS1="! "
+    export PATH
+    
+    # Erase character, erase line, and interrupt keys.
+    stty erase '^H' kill '^U' intr '^?'
+    # Check terminal type.
+    case $TERM in
+    dialup|unknown|network)
+            echo -n "Terminal type? ($TERM) "; read term
+            TERM="${term:-$TERM}"
+    esac
+    
+    # Shell configuration.
+    case "$0" in *ash) . $HOME/.ashrc;; esac
+    #
+\end{verbatim}
+
+Cada usuario tendr'a 'este script en su home, y cada vez que se "loguee" se ejecutar'a.
+
+\subsubsection{find}
+
+En qu'e directorio se encuentra el archivo \textbf{proc.c}
+
+\begin{verbatim}
+    # find / -name proc.c
+    /usr/src/kernel/proc.c
+\end{verbatim}
+
+\subsubsection{mkdir}
+
+Genere un directorio \textbf{/usr/$<$nombregrupo$>$}
+
+\begin{verbatim}
+    #mkdir /usr/grupo8
+    # cd /usr
+    # ls
+    adm bin grupo8  lib   man  preserve src
+    ast etc include local mdec spool    tmp
+\end{verbatim}
+
+\subsubsection{cp}
+
+Copie el archivo \textbf{/etc/passwd} al directorio \textbf{/usr/$<$nombregrupo$>$}
+
+\begin{verbatim}
+    # cp /etc/passwd /usr/grupo8/passwd
+    # cd /usr/grupo8
+    # ls
+    passwd
+    #
+\end{verbatim}
+
+\subsubsection{chgrp}
+
+Cambie el grupo del archivo \textbf{/usr/$<$grupo$>$/passwd} para que sea other.
+\begin{verbatim}
+    # pwd
+    /usr/grupo8
+    # ls -l
+    total 1
+    -rw-r--r-- 1 root operator 285 Jun 17 22:05 passwd
+    # chgrp other passwd
+    # ls -l
+    total 1
+    -rw-r--r-- 1 root other 285 Jun 17 22:05 passwd
+    #
+\end{verbatim}
+
+\subsubsection{chown}
+
+Cambie el propietario del archivo \textbf{/usr/$<$grupo$>$/passwd} para que sea \textbf{ast}.
+
+\begin{verbatim}
+    # chown ast passwd
+    # ls -l
+    total 1
+    -rw-r--r-- 1 ast other 285 Jun 17 22:06 passwd
+    #
+\end{verbatim}
+
+\subsubsection{chmod}
+
+Cambie los permisos del archivo \textbf{/usr/$<$grupo$>$/passwd} para que:
+
+\begin{itemize}
+\item el propietario tenga permisos de lectura, escritura y ejecuci'on
+\item el grupo tenga solo permisos de lectura y ejecuci'on
+\item el resto tenga solo permisos de ejecuci'on
+\end{itemize}
+
+\begin{verbatim}
+    # chmod 751 passwd
+    # ls -l
+    total 1
+    -rwxr-x--x 1 ast other 285 Jun 17 22:11 passwd
+    #
+\end{verbatim}
+
+\subsubsection{grep}
+
+Muestre las lineas que tiene el texto \textbf{include} en el archivo \textbf{/usr/src/kernel/main.c}
+
+\begin{verbatim}
+    # grep include /usr/src/kernel/main.c
+    #include "kernel.h"
+    #include <signal.h>
+    #include <unistd.h>
+    #include <minix/callnr.h>
+    #include <minix/com.h>
+    #include "proc.h"
+    #
+\end{verbatim}
+
+Muestre las lineas que tiene el texto \textbf{POSIX} que se encuentren en todos los archivos \textbf{/usr/src/kernel/}
+
+\begin{verbatim}
+# grep POSIX /usr/src/kernel/*
+/usr/src/kernel/kernel.h:#define _POSIX_SOURCE 1 /* tell headers to inclu
+de POSIX stuff */
+/usr/src/kernel/rs232.c: if ((tp->tty_termios.c_lflag & IXON) && rs->oxoff !=
+_POSIX_VDISABLE)
+/usr/src/kernel/system.c: * SYS_SENDSIG send a signal to a process (POSIX style)
+/usr/src/kernel/system.c: * SYS_SIGRETURN complete POSIX-style signalling
+/usr/src/kernel/system.c:/* Handle sys_sendsig, POSIX-style signal */
+/usr/src/kernel/system.c:/* POSIX style signals require sys_sigreturn to put
+things in order before the
+/usr/src/kernel/tty.c:/* These Posix functions are allowed to fail if _POSIX_JOB
+_CONTROL is
+/usr/src/kernel/tty.c: /* _POSIX_VDISABLE is a normal character value, so better
+escape it. */
+/usr/src/kernel/tty.c: if (ch == _POSIX_VDISABLE) ch |= IN_ESC;
+#
+\end{verbatim}
+
+\subsubsection{su}
+
+\subsubsubsection{1.3.11.1. Para qu'e sirve?}
+
+Permite convertir un usuario en otro sin tener que desconectarse del sistema.
+Por defecto lo convierte en superuser. Le pedir'a la password correspondiente.
+
+\subsubsubsection{1.3.11.2. Qu'e sucede si ejecuta el comando \textbf{su} estando logueado como \textbf{root}?}
+
+Se genera un shell nuevo. Como estabamos logueados como root, no pidi'o password.
+
+\subsubsubsection{1.3.11.3. Genere una cuenta de $<$usuario$>$}
+%el usuario es Maxi pero me pareció mejor poner pepe
+
+\begin{verbatim}
+    # adduser pepe other /usr/pepe
+    cpdir /usr/ast /usr/pepe
+    chown -R 10:3 /usr/pepe
+    echo pepe::0:0::: >>/etc/shadow
+    echo pepe:##pepe:10:3:pepe:/usr/pepe: >>/etc/passwd
+    The new user pepe has been added to the system. Note that the password,
+    full name, and shell may be changed with the commands passwd(1), chfn(1),
+    and chsh(1). The password is now empty, so only console logins are possible.
+\end{verbatim}
+
+\subsubsubsection{1.3.11.4. Entre a la cuenta $<$usuario$>$ generada}
+
+\begin{verbatim}
+    Minix Release 2.0 Version 0
+    noname login: pepe
+    $
+\end{verbatim}
+
+No pidi'o Password pues el usuario pepe no tiene a'un una seteada.
+ 
+\subsubsubsection{1.3.11.5. Repita los comandos de 1.3.11.2}
+
+Estando logueado como pepe ejecutamos el comando \textbf{su}.
+
+\begin{verbatim}
+    $ su
+    Password:
+    #
+\end{verbatim}
+
+Nos pide la password de root pues el usuario pepe es parte del grupo other. Si fuera parte del grupo operator no la pedir'ia.
+
+\subsubsection{passwd}
+
+\subsubsubsection{1.3.12.1. Cambie la password del usuario nobody}
+
+\begin{verbatim}
+    # passwd nobody
+    Changing the password of nobody
+    New password:
+    Retype password:
+    #
+\end{verbatim}
+
+\subsubsubsection{1.3.12.2. Presione las teclas ALT-F2 y ver'a otra sesi'on MINIX. Loguearse como nobody }
+
+\begin{verbatim}
+    Minix Release 2.0 Version 0
+    noname login: nobody
+    Password:
+    $
+\end{verbatim}
+
+Nos logueamos con password nobody.
+
+\subsubsubsection{1.3.12.3. Ejecutar el comando su}
+
+\begin{verbatim}
+    $ su
+    Password:
+    #
+\end{verbatim}
+
+\subsubsubsection{1.3.12.3.1. Qu'e le solicita?}
+
+Solicita la password de root.
+
+\subsubsubsection{1.3.12.3.2. Sucede lo mismo que en 1.3.11.2?¿Por qu'e?}
+
+No, cuando se realiz'o lo mismo con el usuario \textbf{root} no fue necesario ingresar la password. Esto se debe a que el usuario \textbf{nobody} pertenece al grupo \textbf{nogroup}, quienes no tienen permisos para loguearse como \textbf{root} y, de hecho, casi no poseen ningun tipo de privilegios.
+
+\subsubsection{rm}
+
+Suprima el archivo \textbf{/usr/$<$grupo$>$/passwd}.
+\begin{verbatim}
+    # ls /usr/grupo8
+    passwd
+    # rm /usr/grupo8/passwd
+    # ls /usr/grupo8
+    #
+\end{verbatim}
+
+\subsubsection{ln}
+
+Enlazar el archivo \textbf{/etc/passwd} a los siguientes archivos \textbf{/tmp/contra1} \textbf{/tmp/contra2}.
+Hacer un ls -l para ver cuantos enlaces tiene \textbf{/etc/passwd}.
+
+\begin{verbatim}
+    # ls -l /etc/passwd
+    -rw-r--r-- 1 root operator 314 Apr 15 2007 /etc/passwd
+    # ln /etc/passwd /tmp/contra1
+    # ln /etc/passwd /tmp/contra2
+    # ls -l /etc/passwd
+    -rw-r--r-- 3 root operator 314 Apr 15 2007 /etc/passwd
+    #
+\end{verbatim}
+
+En el listado del archivo, la segunda columna (luego de los permisos) indica la cantidad de links que tiene ese archivo.
+
+\subsubsection{mkfs}
+
+Genere un Filesystem MINIX en un diskette
+
+\begin{verbatim}
+    # mkfs /dev/fd0
+\end{verbatim}
+
+\subsubsection{mount}
+
+\subsubsubsection{M'ontelo en el directorio \textbf{/mnt}.}
+
+\begin{verbatim}
+    # mount /dev/fd0 /mnt
+    /dev/fd0 is read-write mounted on /mnt
+    #
+\end{verbatim}
+
+\subsubsubsection{Presente los filesystems que tiene montados.}
+
+\begin{verbatim}
+    # mount
+    /dev/hd1 is root device
+    /dev/hd2 is mounted on /usr
+    /dev/fd0 is mounted on /mnt
+    #
+\end{verbatim}
+
+
+\subsubsection{df}
+
+\subsubsubsection{Qu'e espacio libre y ocupado tienen todos los filesystems montados?(en KBYTES)}
+
+\begin{verbatim}
+# df
+Device    Inodes Inodes Inodes  Blocks Blocks Blocks  Mounted   V Pr
+           total  used   free    total  used   free      on         
+           -----  -----  -----   -----  -----  -----    ------   - --
+/dev/hd1    496    212    284     1480    700    780    /        2 rw
+/dev/hd2  12528   3309   9219    75096  27443   47653   /usr     2 rw
+/dev/fd0    480      1    479     1440     35    1405   /mnt     2 rw
+#
+\end{verbatim}
+
+En todos los dispositivos, el tama'no de bloque es 1KB, por lo tanto el espacio disponible en KB es el indicado por la columna \textbf{Blocks free} y el espacio ocupado es el indicado por la columna \textbf{Blocks used}.
+
+\subsubsection{ps}
+
+\subsubsubsection{1.3.18.1. ¿Cuántos procesos de usuario tiene ejecutando?}
+
+\begin{verbatim}
+    # ps -a
+    PID TTY  TIME CMD
+     41  co  0:00 -sh
+     42  c1  0:00 getty
+     47  c0  0:00 ash
+     48  c0  0:00 ps -a
+\end{verbatim}
+
+Los procesos de usuario que se est'an ejecutando son 4 (incluyendo al \textbf{ps}).
+
+\subsubsubsection{1.3.18.2. Indique cu'antos son del sistema}
+
+\begin{verbatim}
+    # ps -ax
+    PID TTY  TIME CMD
+      0   ?  0:00 TTY
+      0   ?  0:00 SCSI
+      0   ?  0:00 WINCH
+      0   ?  0:00 SYN_AL
+      0   ?  8:35 IDLE
+      0   ?  0:00 PRINTER
+      0   ?  0:00 FLOPPY
+      0   ?  0:00 MEMORY
+      0   ?  0:00 CLOCK
+      0   ?  0:01 SYS
+      0   ?  0:06 HARDWAR
+      0   ?  0:00 MM
+      0   ?  0:04 FS
+      1   ?  0:00 INIT
+     40  co  0:00 -sh
+     27   ?  0:00 update
+     41  c1  0:00 getty
+     47  co  0:00 ash
+     57  co  0:00 ps -ax
+    #
+\end{verbatim}
+
+Aqu'i se listan todos los procesos incluyendo tambi'en a los de usuario. En total hay 18 procesos ejecut'andose, 4 son de usuario y 15 del sistema.
+
+\subsubsection{umount}
+
+\subsubsubsection{1.3.19.1. Desmonte el Filesystem del directorio /mnt}
+
+\begin{verbatim}
+    # umount /dev/fd0
+    /dev/fd0 unmounted from /mnt
+    #
+\end{verbatim}
+
+\subsubsubsection{1.3.19.2. Monte el Filesystem del diskette como read-only en el directorio /mnt}
+
+\begin{verbatim}
+    # mount /dev/fd0 /mnt -r
+    /dev/fd0 is read-only mounted on /mnt
+    #
+\end{verbatim}
+
+\subsubsubsection{1.3.19.3. Desmonte el Filesystem del directorio /mnt}
+
+\begin{verbatim}
+    # umount /dev/fd0
+    /dev/fd0 unmounted from /mnt
+    #
+\end{verbatim}
+
+\subsubsection{fsck}
+
+\subsubsubsection{Chequee la consistencia de Filesystem del diskette}
+
+\begin{verbatim}
+    # fsck /dev/fd0
+
+    Checking zone map
+    Checking inode map
+    Checking inode list
+    
+    blocksize =  1024        zonesize  =  1024
+    
+         0    Regular files
+         1    Directory
+         0    Block special files
+         0    Character special files
+       479    Free inodes
+         0    Named pipes
+         0    Symbolic links
+      1405    Free zones
+    #
+\end{verbatim}
+
+\subsubsection{dosdir}
+
+\subsubsubsection{Tome un diskette formateado en DOS con archivos y ejecute $dosdir a$}
+
+\begin{verbatim}
+    #dosdir a
+    dosdir: cannot open /dev/dosA: no such file or directory
+    #
+\end{verbatim}
+
+\subsubsubsection{Ejecute los comandos necesarios para que funcione correctamente el comando anterior}
+El diskette con formato DOS est'a en \textbf{/dev/fd1}
+
+\begin{verbatim}
+    #dosdir fd1
+    HOLADOS.TXT
+    ABMUSR
+    GETNEXTG
+    MACHAQUE
+    #
+\end{verbatim}
+
+\subsubsection{dosread}
+
+\subsubsubsection{Copie un archivo de texto desde un diskette DOS al directorio \textbf{/tmp}}
+
+\begin{verbatim}
+    #dosread fd1 HOLADOS.TXT
+    hola mundo!
+
+    #dosread -a fd1 HOLADOS.TXT > /tmp/holaminix.txt
+    #cat /tmp/holaminix.txt
+    hola mundo!
+
+    #
+\end{verbatim}
+
+\subsubsection{doswrite}
+
+\subsubsubsection{Copie el archivo \textbf{/etc/passwd} al diskette DOS}
+
+\begin{verbatim}
+    #doswrite -a fd1 passwd < /etc/passwd
+    #dosdir fd1
+    HOLADOS.TXT
+    ABMUSR
+    GETNEXTG
+    MACHAQUE
+    PASSWD
+    #
+\end{verbatim}

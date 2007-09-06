@@ -1,0 +1,120 @@
+\subsection{Ejercicio 10: Modificaci'on de c'odigos}
+\begin{description}
+\item[a.] Modifique el "scheduler"\ original del MINIX para el nivel de usuarios.
+\item[b.] Modifique la administraci'on de memoria original del MINIX
+\end{description}
+En ambos casos deber'a describir en el informe cu'ales fueron las decisiones tomadas, cu'ales fueron las espectativas y cu'ales fueron los resultados obtenidos e informar el juego de programas utilizados con los cuales se lleg'o a alguna conclusi'on. (test o pruebas mencionados en Forma de entrega).
+
+\subsubsection{Modique el "scheduler"\ original del MINIX para el nivel de usuarios}
+\subsubsubsection{Decisiones tomadas}
+
+La administraci'on de procesos de Minix divide a los procesos en tres categor'ias: procesos de usuario, procesos SERVER (como ser MM, o FS) y procesos TASK (kernel). Asimismo, para los procesos de usuario, utiliza una administraci'on $Round-Robin$, y un proceso s'olo podr'a perder el recurso procesador por alguna de las tres siguientes razones:
+
+\begin{itemize}
+\item El proceso finaliza.
+\item Se bloquee por una operaci'on de E/S o sincronizaci'on.
+\item El uso exceda un cierto $Quantum$.
+\end{itemize}
+
+Decidimos modificar la administraci'on de los procesos de usuario para que cambie de $Round-Robin$ a $FIFO$,
+
+\subsubsubsection{Expectativas}
+
+Como estamos permitiendo un uso m'as prolongado y continuo del recurso procesador, es de esperar que los procesos de alto uso de CPU se vean beneficiados, quiz'as en detrimento de procesos que tengan, en cambio, mayor uso de E/S, ya que 'estos se bloquear'an r'apidamente y estar'an un largo tiempo en espera del recurso.
+
+\subsubsubsection{Resultados}
+
+Nuestra propuesta es modificar el archivo \textbf{/usr/src/kernel/clock.c}. De la siguiente manera: si esta definido UBA\_FCEN, entonces en la funci'on $do\_clocktick$ no se ejecutar'a el c'odigo que realiza la selecci'on de un proceso de usuario nuevo, en el caso en que no haya ni procesos SERVER ni TASK para elegir y adem'as que el proceso anterior haya excedido su $Quantum$.
+
+El c'odigo que no se ejecuta si UBA\_FCEN est'a definido est'a en el Ap'endice A.
+
+Se generaron dos procesos de prueba \textbf{highCPU.c} y \textbf{lowCPU.c}. El primero consiste en la repetici'on de un ciclo que contiene a su vez otro ciclo, en total clica aproximadamente 5000050000 veces. El segundo consiste en la repetici'on de un ciclo 10000 veces. Ambos al terminar muestran por pantalla la etiqueta: "Final de highCPU"\ y "Final de lowCPU"\ respectivamente.
+
+A continuación se muestran los resultados obtenidos con la administraci'on $Round-Robin$:
+
+\begin{verbatim}
+    # cd /usr/grupo8/ej10
+    # ls
+    highCPU highCPU.c lowCPU lowCPU.c
+    #./highCPU & ./lowCPU 
+    Final de lowCPU
+    # Final de highCPU
+    #
+    #./lowCPU & ./highCPU
+    Final de lowCPU
+    # Final de highCPU
+\end{verbatim}
+
+Si cambiamos a la administraci'on a $FIFO$ obtenemos los siguientes valores:
+
+\begin{verbatim}
+    # cd /usr/grupo8/ej10
+    # ls
+    highCPU highCPU.c lowCPU lowCPU.c
+    #./highCPU & ./lowCPU 
+    Final de lowCPU
+    # Final de highCPU
+    #
+    #./lowCPU & ./highCPU
+    Final de highCPU
+    # Final de lowCPU
+\end{verbatim}
+
+Con la administraci'on $Round-Robin$ lowCPU siempre termina primero. Debido a que hace poco uso del procesador (menos que highCPU) y adem'as tiene su "\ cuota"\ de procesador correspondiente debido al tipo de administraci'on. Esto hace que termine de ejecutar antes que highCPU.
+
+Con la administraci'on $FIFO$ termina primero el que obtiene el recurso procesador primero. Ninguno de los procesos se bloquea, dando lugar a ejecutar al otro, ya que no realizan E/S.
+
+\subsubsection{Modifique la administraci'on de memoria original del MINIX}
+
+\subsubsubsection{Decisiones tomadas}
+MINIX utiliza administraci'on de memoria particionada variable, con $primer\ zona$ (first fit) como algoritmo de selecci'on. Se cambi'o el procedimiento de alocaci'on de memoria para que utilice el algoritmo de selecci'on $mayor\ zona$.
+
+El c'odigo modificado se encuentra en el Ap'endice A.
+
+\subsubsubsection{Expectativas}
+'Estas administraciones fueron vistas durante el curso. Tanto la administraci'on $mayor\ zona$ como la administraci'on "golosa" de $first\ fit$ tienen casos en la que resultan buenas y casos en las que no. Con lo cual no se espera alg'un comportamiento en particular, salvo porque se deber'ia de estar tomando siempre el segmento de mayor tama'no.
+
+\subsubsubsection{Resultados}
+Para realizar las modificaciones, cambiamos la secci'on de alocaci'on de memoria que ocurre en la funci'on $alloc\_mem$ del archivo \textbf{/usr/src/mm/alloc.c}. En ella se hace un while recorriendo los segmentos libres en la memoria del sistema en busca del de mayor tama'no. Cuando se encuentra (en el caso en que cubra el requerimiento) nos quedamos con ese lugar, caso contrario se devuelve un mensaje de error (Ver Ap'endice).
+
+Para poder ver los resultados agregamos dentro de la funci'on c'odigo que nos muestra el tama'no de los segmentos libres antes y despu'es de la alocaci'on. Para que dicho c'odigo se ejecute debe estar definida la variable DEBUGG. Dicha variable se encuentra en \textbf{/usr/include/minix/config.h}.
+
+Usamos el programa de test 4000Clicks.c que puede encontrarse en la carpeta \textbf{/usr/grupo8/ej10}:
+\begin{verbatim}
+    static char datos [4000*256]; /* reserva 1000k */
+    int main ( void)
+    {
+    return 0 ;
+    }
+\end{verbatim}
+
+Este programa lo 'unico que hace es reservar 4000 clicks (de 256 Bytes) de memoria que es equivalente a 1000 KB.
+Lo ejecutamos y observamos lo siguiente:
+
+\begin{verbatim}
+    # ls
+    Se quiere reservar 306 espacios de memoria
+    1936 514 67 5860
+    Los segmentos quedaron de la siguiente manera
+    1936 514 67 5554
+    Se quiere reservar 440 espacios de memoria
+    1936 514 67 5860
+    Los segmentos quedaron de la siguiente manera
+    1936 514 67 5420
+    4000Clicks 4000Clicks.c
+    # ./4000Clicks
+    Se quiere reservar 306 espacios de memoria
+    1936 514 67 5860
+    Los segmentos quedaron de la siguiente manera
+    1936 514 67 5554
+    Se quiere reservar 4514 espacios de memoria
+    1936 514 67 5860
+    Los segmentos quedaron de la siguiente manera
+    1936 514 67 1346
+    #
+\end{verbatim}
+
+Notar que el cambio fue el deseado, ya que al pedir memoria siempre se ocupa el segmento de mayor tama'no. Usando la administraci'on anterior se ubiese ocupado el primer bloque.
+
+Aclaraci'on: El click es la unidad b'asica de tama'no de memoria. Si el procesador es Intel est'a definida como 256 Bytes y var'ia para otros procesadores. Estos $define$ se encuentran en $const.h$.
+Para poder ver como se va modificando la memoria hay que bootear con la imagen $imagMemChck$ que est'a en el directorio \textbf{/minix}. %Las otras im'agenes tambi'en tienen la modificaci'on en la administraci'on de memoria pero el "debug"\ est'a \"apagado".
