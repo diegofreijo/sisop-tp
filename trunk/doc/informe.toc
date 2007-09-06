@@ -49,5 +49,5 @@
 \contentsline {subsection}{\numberline {1.11}Ejercicio 11}{34}
 \contentsline {subsubsection}{\numberline {1.11.1}Pruebas}{35}
 \contentsline {subsection}{\numberline {1.12}Ejercicio 12}{35}
-\contentsline {section}{\numberline {2}Ap'endice A}{36}
-\contentsline {section}{\numberline {3}Referencias}{39}
+\contentsline {subsubsection}{\numberline {1.12.1}Pruebas ejercicio 12}{38}
+\contentsline {section}{\numberline {2}Referencias}{40}

@@ -94,7 +94,7 @@
 b) Instalamos Minix sobre una imagen .vhd.
 'Esta fue creada con el entorno Virtua Pc 2004 de Microsoft. 
 La intensi'on era generar una imagen que pueda ser corrida en dicha aplicaci'on dado que en sucesivos 
-intentos de instalaci'on, el Minix acusaba un \"File System Panic\" y abortaba la misma.
+intentos de instalaci'on, el Minix acusaba un ''File System Panic'' y abortaba la misma.
 Se us'o pues para la instalacion Qemu 4 con el Qemu Manager de Interfaz Gr'afica. Sin embargo, esta
 versi'on present'o problemas al cargar el 'ultimo disco de instalaci'on y fue necesario utilizar la 
 versi'on que presenta la p'agina de la materia para concluir exitosamente la misma. El resto de los
@@ -128,6 +128,7 @@ selecionar 144M.dsk $\rightarrow$ Checkear: \verbºBootear desde disco floppyº $\
 \item Ingresar usuario root.
 
 \item Modificar el archivo setup: \verbºmined /usr/bin/setupº
+
 Reemplazar l'ineas:
 \begin{verbatim}
 	root = ${primary}a
@@ -148,7 +149,7 @@ seleccionar hd0 $\rightarrow$ Seleccionar las particiones de hd1 y hd2 $\rightar
 Deschequear: \verbºBootear desde disco floppyº
 
 
-\item con el comando partir, generar las imagenes de USR.TAZ, SYS.TAZ Y CMD.TAZ. 
+\item con el comando partir, generar las imagenes de \verbºUSR.TAZ, SYS.TAZ Y CMD.TAZº.
 En l'inea de comando ejecutar en el directorio donde estan los archivos y el ejecutable:
 partir [u] usr.taz
 partir [s] sys.taz

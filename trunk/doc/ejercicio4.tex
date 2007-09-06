@@ -1,0 +1,86 @@
+\subsection{Ejercicio 4: Uso de STDIN, STDOUT, STDERR y PIPES}
+\subsubsection{STDOUT}
+\subsubsubsection{1.4.1.1. Conserve el archivo /usr/$<$grupo$>$/fuentes.txt la salida del comando ls que muestra todos los archivos del directorio /usr/src y de los subdirectorios bajo /usr/src}
+
+\begin{verbatim}
+    # cd /usr/grupo8
+    # ls -al /usr/src > /usr/grupo8/fuentes.txt
+    #
+\end{verbatim}
+
+\subsubsubsection{1.4.1.2. Presente cuantas lineas, palabras y caracteres tiene /usr/$<$grupo$>$/fuentes.txt}
+
+\begin{verbatim}
+    # wc /usr/grupo8/fuentes.txt
+         25    218   1455 /usr/grupo8/fuentes.txt
+    #
+\end{verbatim}
+
+El archivo \textbf{/usr/grupo8/fuentes.txt} tiene 25 líneas, 218 palabras y 1455 caracteres.
+
+\subsubsection{STDOUT}
+\subsubsubsection{1.4.2.1. Agregue el contenido, ordenado alfab'eticamente, del archivo /etc/passwd al final del archivo /usr/$<$grupo$>$/fuentes.txt}
+
+\begin{verbatim}
+    # sort /etc/passwd >> /usr/grupo8/fuentes.txt
+\end{verbatim}
+
+\subsubsubsection{1.4.2.2. Presente cu'antas lineas, palabras y caracteres tiene usr/$<$grupo$>$/fuentes.txt}
+
+\begin{verbatim}
+    # wc /usr/grupo8/fuentes.txt
+         34    234   1769 /usr/grupo8/fuentes.txt
+    #
+\end{verbatim}
+
+El archivo \textbf{/usr/grupo8/fuentes.txt} tiene 34 líneas, 234 palabras y 1769 caracteres.
+
+\subsubsection{STDIN}
+
+\subsubsubsection{1.4.3.1. Genere un archivo llamado /usr/$<$grupo$>$/hora.txt usando el comando echo con el siguiente contenido: 2355}
+
+\begin{verbatim}
+    # echo 2355 > /usr/grupo8/hora.txt
+\end{verbatim}
+
+\subsubsubsection{1.4.3.2. Cambie la hora del sistema usando el archivo /usr/$<$grupo$>$/hora.txt generado en 1.4.3.1}
+
+\begin{verbatim}
+    # date -q < /usr/grupo8/hora.txt
+\end{verbatim}
+
+\subsubsubsection{1.4.3.3. Presente la fecha del sistema}
+
+\begin{verbatim}
+    # date
+    Mon Aug 20 23:55:07 MET DST 2007
+    #
+\end{verbatim}
+
+\subsubsection{STDERR}
+
+\subsubsubsection{Guarde el resultado de ejecutar el comando dosdir k en el archivo /usr/$<$grupo$>$/error.txt. Muestre el contenido de /usr/<grupo>/error.txt.}
+
+\begin{verbatim}
+    # dosdir k > /usr/grupo8/error.txt 2>&1
+    # cat /usr/grupo8/error.txt
+    dosdir: cannot open /dev/dosK: No such file or directory
+    #
+\end{verbatim}
+
+\subsubsection{PIPES}
+Posici'onese en el directorio \textbf{/}(directorio ra'iz), una vez que haya hecho eso:
+\subsubsubsection{1.4.5.1. Liste en forma amplia los archivos del directorio /usr/bin que comiencen con la letra s. Del resultado obtenido, seleccione las l'ineas que contienen el texto sync e informela cantidad de caracteres, palabras y l'ineas.}
+Nota 1: Est'a prohibido, en este 'item, usar archivos temporales de trabajo. 
+
+Nota 2: Si le da error, es por falta de memoria, cierre el proceso de la otra sesi'on, haga un kill sobre los procesos update y getty.
+
+\begin{verbatim}
+    # pwd
+    /
+    # ls -lc /usr/bin/s* | grep sync | wc
+          2     18    140
+    #
+\end{verbatim}
+
+2 líneas, 18 palabras y 140 caracteres.
