@@ -48,6 +48,6 @@
 \contentsline {subsubsection}{\numberline {1.10.2}Modifique la administraci'on de memoria original del MINIX}{33}
 \contentsline {subsection}{\numberline {1.11}Ejercicio 11}{34}
 \contentsline {subsubsection}{\numberline {1.11.1}Pruebas}{35}
-\contentsline {subsection}{\numberline {1.12}Ejercicio 12}{35}
+\contentsline {subsection}{\numberline {1.12}Ejercicio 12}{36}
 \contentsline {subsubsection}{\numberline {1.12.1}Pruebas ejercicio 12}{38}
-\contentsline {section}{\numberline {2}Referencias}{40}
+\contentsline {section}{\numberline {2}Referencias}{41}
