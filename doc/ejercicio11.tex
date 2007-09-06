@@ -3,21 +3,50 @@ Se realizaron los siguientes cambios
 
 \verbº/usr/include/minix/callnr.hº
 
-Se incrementó en 1 el define NCALLS
-Se agregó \verb0#define LLAMSISTEMA0 con el nro correspondiente 
+Se increment'o en 1 el define NCALLS
+Se agregó \verb0#define LLAMSISTEMA0 con el nro correspondiente
 
-\verb0/usr/src/mm/table.c0
+\verbº/usr/src/mm/proto.hº
+Se agrega linea:
 
-Nota: no se usó el nombre pedido x la cátedra (newcall), ya que este fue usado para otras pruebas. Se realizó una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente. 
+\verbº_PROTOTYPE( int do_llamsistema, (void)	);º
 
-El el mismo directorio el newcall.c y el othercall.c son source para probar dichas funciones
+
+\verbº/usr/src/mm/table.cº
+Se agrega linea:
+
+\verbºdo_llamsistema, 	/\textasteriskcentered 79 = LLAMSISTEMA \textasteriskcentered/º
+
+
+\verbº/usr/src/fs/table.cº
+Se agrega linea:
+
+\verbºno_sys, 		/\textasteriskcentered 79 = LLAMSISTEMA \textasteriskcentered/º
+
+
+Se implementa System Call en:
+\verbº/usr/src/mm/llamsistema.cº
+Se actualiza Makefile de \verbº/usr/src/mmº para incluirlo.
+
+Se agrega la linea al archivo
+\verbº/usr/include/minix/com.hº
+
+\verbº#define OPC_NEWCALL		mi_i1º
+
+Para renombrar el par'ametro que se usa para la elecci'on de la consulta que se hace por medio del System Call.
+
+Se recompila kernel
+
+Ejecutar
+
 \begin{verbatim}
-./newcall
-./othercall
+# /usr/src/tools/make install
+# /usr/src/tools/make hdboot
 \end{verbatim}
 
-Tienen la misma funcionalidad que \verb0./llam 10
 
+
+\emph{Nota: no se us'o el nombre pedido x la c'atedra (newcall), ya que este fue usado para otras pruebas. Se realiz'o una version del getpid desde MM y desde FS, sendas llamadas a sistema con nombres newcall y othercall respectivamente.}
 
 \subsubsection{Pruebas}
 
@@ -43,4 +72,13 @@ Opcion es del 1 al 5
 \item Entrega el puntero al segmento stack, en hexadecimal
 \end{enumerate}
 
-Para las opciones 3, 4 y 5, para verificar la correctitud de la misma se agregó un ciclo while para evitar que el programa termine. Al ejecutar el programa con algunas de estas opciones, al presionar F2 veremos la informacion de los segmentos correspondientes. Para matar al proceso, abrimos otra consola, ejecutamos ps para ver el nro del mismo y con el comando \verb0kill [nro proc]0 lo eliminamos.
+Para las opciones 3, 4 y 5, para verificar la correctitud de la misma se agreg'o un ciclo while para evitar que el programa termine. Al ejecutar el programa con algunas de estas opciones, al presionar F2 veremos la informacion de los segmentos correspondientes. Para matar al proceso, abrimos otra consola, ejecutamos ps para ver el nro del mismo y con el comando \verb0kill [nro proc]0 lo eliminamos.
+
+En el mismo directorio el newcall.c y el othercall.c son source para probar dichas funciones
+\begin{verbatim}
+./newcall
+./othercall
+\end{verbatim}
+
+Tienen la misma funcionalidad que \verb0./llam 10
+La funci'on \verb0NEWCALL0 utiliza la informaci'on del Memory Manager (igual que \verb0LLAMSISTEMA0) para averiguar el pid y \verb0OTHERCALL0, el File System.
