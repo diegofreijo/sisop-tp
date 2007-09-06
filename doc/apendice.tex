@@ -1,0 +1,122 @@
+\section{Apendice}
+\subsection{Fuentes del ejercicio 11}
+
+llamsistema.c
+
+\begin{verbatim}
+#include "mm.h"
+#include <minix/callnr.h>
+#include <signal.h>
+#include "mproc.h"
+#include <stdlib.h>
+#include <minix/com.h>
+#include <minix/type.h>
+
+PUBLIC int do_llamsistema( void ) {
+
+	register struct mproc *rmp = mp;
+	
+	register int r;
+
+	switch( mm_in.OPC_NEWCALL ) {
+
+		case 1: /* pid */
+
+			r = mproc[who].mp_pid;
+			break;
+
+		case 2: /* ppid */
+
+			break;
+
+		case 3: /* text */
+
+			r = (int) mproc[who].mp_seg[T].mem_phys;
+			break;
+
+		case 4: /* data */
+			
+			r = (int) mproc[who].mp_seg[D].mem_phys;
+			break;
+
+		case 5: /* stack */
+
+			r = (int) mproc[who].mp_seg[S].mem_phys;
+			break;
+
+		default:
+			
+			break;
+
+	}
+
+	return r;
+
+}
+
+\end{verbatim}
+
+\_llamsistema.c
+
+\begin{verbatim}
+#include <lib.h>
+#include <unistd.h>
+#include <minix/com.h>
+#define llamsistema _llamsistema
+
+PUBLIC int llamsistema( int opcion ) {
+
+	message m;
+
+	switch( opcion ) {
+
+		case 1:	/* pid */
+		case 3: /* text */
+		case 4: /* data */
+		case 5: /* stack */
+
+			m.OPC_NEWCALL = opcion;
+	
+			return(_syscall( MM, LLAMSISTEMA, &m ));
+
+		case 2: /* ppid */
+	
+			_syscall( MM, LLAMSISTEMA, &m );
+			return m.m2_i1;
+
+		default:
+
+			return -1;
+
+	} 
+}
+\end{verbatim}
+
+llamsistema.s
+
+\begin{verbatim}
+.sect .text
+.extern __llamsistema
+.define _llamsistema
+
+.align 2
+
+_llamsistema:
+	jmp __llamsistema
+\end{verbatim}
+
+\subsection{Fuentes del ejercicio 12}
+
+\input{fuentes/constsemaf.h.tex}
+\input{fuentes/crear_sem.s.tex}
+\input{fuentes/init.s.tex}
+\input{fuentes/liberar_sem.s.tex}
+\input{fuentes/p_sem.s.tex}
+\input{fuentes/semaf.c.tex}
+\input{fuentes/semaf.h.tex}
+\input{fuentes/semaforo.h.tex}
+\input{fuentes/system.c.tex}
+\input{fuentes/sys_block.c.tex}
+\input{fuentes/sys_unblock.c.tex}
+\input{fuentes/v_sem.s.tex}
+\input{fuentes/_sem.c.tex}
