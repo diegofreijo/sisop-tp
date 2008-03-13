@@ -1,4 +1,5 @@
 using System;
+using QFSvb.QFSvb.FileSystem;
 
 namespace QFS
 {
@@ -11,6 +12,13 @@ namespace QFS
 		static void Main()
 		{
 			// Inicializo la consola
+            // System.Console.WriteLine("hola, mundo");
+            File elem = new File(1);
+
+            elem.name = "archivo.txt";
+
+            System.Console.WriteLine(elem.idFSElement);
+            System.Console.WriteLine(elem.name);
 			
 		}
 	}
