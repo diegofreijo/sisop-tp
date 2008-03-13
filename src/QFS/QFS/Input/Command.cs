@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 
 namespace QFS.Input
 {
@@ -30,7 +31,7 @@ namespace QFS.Input
 		}
 
 		
-		public virtual object Execute()
+		public virtual Object Execute()
 		{
 			throw new System.Exception("The method or operation is not implemented.");
 		}
