@@ -14,6 +14,12 @@ Namespace QFSvb.FileSystem
             Me.iId = idFSElement
         End Sub
 
+        ''' <summary>
+        ''' 
+        ''' </summary>
+        ''' <value></value>
+        ''' <returns></returns>
+        ''' <remarks></remarks>
         Public ReadOnly Property idFSElement()
             Get
                 idFSElement = Me.iId
