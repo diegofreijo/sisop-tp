@@ -48,6 +48,7 @@
     <Compile Include="FileSystem\File.vb" />
     <Compile Include="FileSystem\Dir.vb" />
     <Compile Include="FileSystem\FSElement.vb" />
+    <Compile Include="HdDriver\HdDriver.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
