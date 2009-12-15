@@ -22,11 +22,10 @@ public class FS {
 	//public String[] dir = new String[100];
 	private File[] files	= new File[5];
 	private Dir[] querys 	= new Dir[5];
-	private String[] forDir = new String[10];
-
 	private User[] usuarios = new User[5];
-	private Permission[] permisos = new Permission[100];
+	private Permission[] permisos = new Permission[10];
 
+	private String[] forDir = new String[10];
 
 	public String[] getForDir() {
 		return forDir;
@@ -36,8 +35,10 @@ public class FS {
 		this.forDir = forDir;
 	}
 
-	private boolean[] fileOcupado	= new boolean[5];
-	private boolean[] queryOcupado	= new boolean[5];
+	private boolean[] fileOcupado		= new boolean[5];
+	private boolean[] queryOcupado		= new boolean[5];
+	private boolean[] usuarioOcupado	= new boolean[5];
+	private boolean[] permisoOcupado	= new boolean[10];
 
 	private Connection conn;
 	private Statement stat;
@@ -53,22 +54,19 @@ public class FS {
 			querys[i]	= new Dir();
 			queryOcupado[i]	= false;
 		}
-
+		for (int i = 0; i < usuarios.length; i++) {
+			usuarios[i]	= new User();
+			usuarioOcupado[i]	= false;
+		}
+		for (int i = 0; i < permisos.length; i++) {
+			permisos[i]	= new Permission();
+			permisoOcupado[i]	= false;
+		}
+		
 		Class.forName("org.sqlite.JDBC");
 		conn = DriverManager.getConnection("jdbc:sqlite:test.db");
 		stat = conn.createStatement();
-//
-//		ResultSet rs = stat.executeQuery("select * from files;");
-//		int i = 0;
-//		while (rs.next()) {
-//			files[i].setId(rs.getInt("id"));
-//			files[i].setIdDir(rs.getInt("idDir"));
-//			files[i].setName(rs.getString("name"));
-//			files[i].setTipo(TipoArchivo.values()[rs.getInt("tipo")]);
-//			fileOcupado[i] = true;
-//			i++;
-//	    }
-//		rs.close();
+
 	}
 
 	public File getFile(int i) {
@@ -128,9 +126,29 @@ public class FS {
 	public void mkQuery(String nombreQuery, String consulta) {
 		int idQuery = getIdentificadorQuery();
 		Query query = getQuery(idQuery);
-		query.setId(idQuery);
 		query.setName(nombreQuery);
 		query.setConsulta(consulta);
+		
+		try {
+
+			Class.forName("org.sqlite.JDBC");
+
+			String sql = "INSERT INTO QUERYS (NAME, CONSULTA) VALUES ( " +
+				"'" + query.getName() + "', " +
+				"'" + query.getConsulta() + "')";
+			System.out.println(sql);
+
+			stat.execute(sql);
+			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
+			query.setId(rs.getInt(1));
+
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public String toString() {
