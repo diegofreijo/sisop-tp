@@ -1,12 +1,20 @@
 package filesystem.entidades;
 
+import filesystem.varios.PermissionLevel;
+
 public class Permission {
 
 	private User usuario;
 	private File archivo;
-	private int permiso;
+	private PermissionLevel permiso;
+	
+	public Permission() {
+		this.usuario = null;
+		this.archivo = null;
+		this.permiso = PermissionLevel.NONE;
+	}
 
-	public Permission(User usuario, File archivo, int permiso) {
+	public Permission(User usuario, File archivo, PermissionLevel permiso) {
 		super();
 		this.usuario = usuario;
 		this.archivo = archivo;
@@ -29,11 +37,11 @@ public class Permission {
 		this.archivo = archivo;
 	}
 
-	public int getPermiso() {
+	public PermissionLevel getPermiso() {
 		return permiso;
 	}
 
-	public void setPermiso(int permiso) {
+	public void setPermiso(PermissionLevel permiso) {
 		this.permiso = permiso;
 	}
 
