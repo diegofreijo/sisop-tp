@@ -343,6 +343,16 @@ public class FS {
 		}
 
 		return forDir;
+	}
+
+	public FSElement[] ls() {
+		
+		return null;
+	}
+
+	public void cd(String string) {
+		// TODO Auto-generated method stub
+		
 	}
 }
 
