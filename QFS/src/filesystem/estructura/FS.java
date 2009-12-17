@@ -19,7 +19,6 @@ public class FS {
 
 	public HDDriver driver;
 
-	//public String[] dir = new String[100];
 	private File[] files	= new File[5];
 	private Dir[] querys 	= new Dir[5];
 	private User[] usuarios = new User[5];
@@ -39,6 +38,15 @@ public class FS {
 	private boolean[] queryOcupado		= new boolean[5];
 	private boolean[] usuarioOcupado	= new boolean[5];
 	private boolean[] permisoOcupado	= new boolean[10];
+	private boolean[] byteOcupado		= new boolean[500];
+
+	public boolean[] getByteOcupado() {
+		return byteOcupado;
+	}
+
+	public void setByteOcupado(boolean[] byteOcupado) {
+		this.byteOcupado = byteOcupado;
+	}
 
 	private Connection conn;
 	private Statement stat;
@@ -353,6 +361,23 @@ public class FS {
 	public void cd(String string) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public int alocarContenido(byte[] contenido, int largo) {
+		// FIRST FIT
+		int i = 0;
+		int desdePos = 0;		
+		while (i < largo) {
+			if (desdePos >= byteOcupado.length)
+				return 1;
+			if (byteOcupado[desdePos+i]) {
+				desdePos +=i+1;
+				i = 0;
+			} else {
+				i++;				
+			}				
+		}		
+		return 0;
 	}
 }
 
