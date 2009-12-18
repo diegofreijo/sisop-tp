@@ -387,12 +387,28 @@ public class FS {
 		for (int j = 0; j < largo; j++) {
 			byteOcupado[desdePos+j] = true;
 		}
+		String sql = "UPDATE BUSY SET BUSY = 1 WHERE ID <= " + desdePos + " AND ID < " + desdePos + largo;
+		System.out.println(sql);
+		try {
+			stat.execute(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		return 0;
 	}
 	
 	public void desalocarContenido(int desdePos, int largo) {
 		for (int j = 0; j < largo; j++) {
 			byteOcupado[desdePos+j] = false;
+		}
+		String sql = "UPDATE BUSY SET BUSY = 0 WHERE ID <= " + desdePos + " AND ID < " + desdePos + largo;
+		System.out.println(sql);
+		try {
+			stat.execute(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
