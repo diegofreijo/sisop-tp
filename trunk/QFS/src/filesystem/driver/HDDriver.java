@@ -1,27 +1,30 @@
 package filesystem.driver;
 
-import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 
 public class HDDriver {
 	
-	private byte disco[] = new byte[10000];
+	private byte disco[];
 	
 	public HDDriver() {
 		
-		 
 		try {
-			File file = new File("file.dat");
+			
+            FileInputStream fileinputstream = new FileInputStream("file.dat");
 
-			BufferedReader br = new BufferedReader(new FileReader(file));
+            int numberBytes = fileinputstream.available();
+            byte disco[] = new byte[numberBytes];
 
-			for (int i = 0; i < disco.length; i++) {
-				disco[i] = (byte)br.read(); 	
-			}
+            fileinputstream.read(disco);
+
+            for(int i = 0; i < numberBytes; i++){
+                System.out.println(disco[i]);
+            }
+
+            fileinputstream.close();
 			
 					
 		} catch (FileNotFoundException e) {
@@ -29,6 +32,18 @@ public class HDDriver {
 		} catch (IOException e) {
 			System.err.println("error");
 		}		
+	}
+	
+	public void getBytes(int init, int lenght, byte[] datos) {
+		for (int i = 0; i < lenght; i++) {
+			datos[i] = disco[init+i];
+		}
+	}
+	
+	public void setBytes(int init, int lenght, byte[] datos) {
+		for (int i = 0; i < lenght; i++) {
+			disco[init+i] = datos[i];
+		}
 	}
 
 }

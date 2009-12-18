@@ -38,7 +38,7 @@ public class FS {
 	private boolean[] queryOcupado		= new boolean[5];
 	private boolean[] usuarioOcupado	= new boolean[5];
 	private boolean[] permisoOcupado	= new boolean[10];
-	private boolean[] byteOcupado		= new boolean[500];
+	private boolean[] byteOcupado		= new boolean[64000];
 
 	public boolean[] getByteOcupado() {
 		return byteOcupado;
@@ -74,6 +74,13 @@ public class FS {
 		Class.forName("org.sqlite.JDBC");
 		conn = DriverManager.getConnection("jdbc:sqlite:test.db");
 		stat = conn.createStatement();
+		
+		ResultSet rs = stat.executeQuery("SELECT ID, BUSY FROM BUSY");
+		while (rs.next()) {
+			int i = rs.getInt("ID");
+			int ocupado = rs.getInt("BUSY");
+			byteOcupado[i] = (ocupado == 1)?true:false;			
+		}
 
 	}
 
@@ -331,15 +338,18 @@ public class FS {
 	}
 
 	public String[] dir(String nombreDir) {
-		int idDir = getQueryId(nombreDir);
-		Dir dir = getDir(idDir);
+//		int idDir = getQueryId(nombreDir);
+//		Dir dir = getDir(idDir);
 		for (int i = 0; i < forDir.length; i++) {
 			forDir[i] = "";
 		}
 		try {
-			String sql = "SELECT NAME FROM FILES WHERE IDDIR = " + idDir;
+			String sql = "SELECT CONSULTA FROM QUERYS WHERE NAME = '" + nombreDir + "'";
 			System.out.println(sql);
 			ResultSet rs = stat.executeQuery(sql);
+			sql = rs.getString("consulta"); 
+			System.out.println(sql);
+			rs = stat.executeQuery(sql);
 			int i = 0;
 			while(rs.next()) {
 				forDir[i] = rs.getString("name");
@@ -351,11 +361,6 @@ public class FS {
 		}
 
 		return forDir;
-	}
-
-	public FSElement[] ls() {
-		
-		return null;
 	}
 
 	public void cd(String string) {
@@ -377,7 +382,18 @@ public class FS {
 				i++;				
 			}				
 		}		
+		//entra desdePos
+		driver.setBytes(desdePos, largo, contenido);
+		for (int j = 0; j < largo; j++) {
+			byteOcupado[desdePos+j] = true;
+		}
 		return 0;
+	}
+	
+	public void desalocarContenido(int desdePos, int largo) {
+		for (int j = 0; j < largo; j++) {
+			byteOcupado[desdePos+j] = false;
+		}
 	}
 }
 

@@ -23,24 +23,23 @@ public class Pruebas {
 				System.out.println(archivos[i]);
 			}
 			
-			FSElement dir[];
-			dir = fs.ls();
+			String dir[];
+			dir = fs.dir("directorio");
 			for (int i = 0; i < dir.length; i++) {
 				System.out.println(dir[i]);
 			}
-			fs.cd("directorio");
 			System.out.println("cd directorio");
-			dir = fs.ls();
-			for (int i = 0; i < dir.length; i++) {
-				System.out.println(dir[i]);
-			}			
-			fs.cd("query");
-			System.out.println("cd query");
-			dir = fs.ls();
-			for (int i = 0; i < dir.length; i++) {
-				System.out.println(dir[i]);
-			}
 			
+//			for (int i = 0; i < dir.length; i++) {
+//				System.out.println(dir[i]);
+//			}			
+//			
+//			System.out.println("cd query");
+//			dir = fs.dir();
+//			for (int i = 0; i < dir.length; i++) {
+//				System.out.println(dir[i]);
+//			}
+//			
 
 //			fs.newFile("arch1.txt",TipoArchivo.datos);
 //			fs.newFile("arch2.txt",TipoArchivo.datos);

@@ -1,39 +1,32 @@
 package test;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
+
+import filesystem.driver.HDDriver;
+import filesystem.estructura.FS;
 
 public class Test {
 
 	  public static void main(String[] args) throws Exception {
-	      Class.forName("org.sqlite.JDBC");
-	      Connection conn = DriverManager.getConnection("jdbc:sqlite:test.db");
-	      Statement stat = conn.createStatement();
-	      /*
-	      stat.executeUpdate("drop table if exists people;");
-	      stat.executeUpdate("create table people (name, occupation);");
-	      PreparedStatement prep = conn.prepareStatement(
-	          "insert into people values (?, ?);");
-
-	      prep.setString(1, "Gandhi");
-	      prep.setString(2, "politics");
-	      prep.addBatch();
-	      prep.setString(1, "Turing");
-	      prep.setString(2, "computers");
-	      prep.addBatch();
-	      prep.setString(1, "Wittgenstein");
-	      prep.setString(2, "smartypants");
-	      prep.addBatch();
-
-	      conn.setAutoCommit(false);
-	      prep.executeBatch();
-	      conn.setAutoCommit(true);
-	       */
-	      ResultSet rs = stat.executeQuery("select * from files;");
-	      while (rs.next()) {
-	          System.out.println(rs.getString("name"));
-	      }
-	      rs.close();
-	      conn.close();
+		  
+		//HDDriver hd = new HDDriver();
+		
+		FS fs = new FS();
+		
+		String dir[] = fs.dir("Hoy");
+		for (int i = 0; i < dir.length; i++) {
+			System.out.println(dir[i]);
+		}
+		dir = fs.dir("Ayer");
+		for (int i = 0; i < dir.length; i++) {
+			System.out.println(dir[i]);
+		}
+		
 	  }
+		
 
 }
