@@ -19,13 +19,7 @@ public class HDDriver {
             byte disco[] = new byte[numberBytes];
 
             fileinputstream.read(disco);
-
-            for(int i = 0; i < numberBytes; i++){
-                System.out.println(disco[i]);
-            }
-
             fileinputstream.close();
-			
 					
 		} catch (FileNotFoundException e) {
 			System.err.println("error");
