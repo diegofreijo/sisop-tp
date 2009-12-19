@@ -70,17 +70,18 @@ public class FS {
 			permisos[i]	= new Permission();
 			permisoOcupado[i]	= false;
 		}
-		
+
 		Class.forName("org.sqlite.JDBC");
 		conn = DriverManager.getConnection("jdbc:sqlite:test.db");
 		stat = conn.createStatement();
-		
-		ResultSet rs = stat.executeQuery("SELECT ID, BUSY FROM BUSY");
+
+		ResultSet rs = stat.executeQuery("SELECT POSITION, BUSY FROM BUSY");
 		while (rs.next()) {
-			int i = rs.getInt("ID");
+			int i = rs.getInt("POSITION");
 			int ocupado = rs.getInt("BUSY");
-			byteOcupado[i] = (ocupado == 1)?true:false;			
+			byteOcupado[i] = (ocupado == 1)?true:false;
 		}
+
 
 	}
 
@@ -143,7 +144,7 @@ public class FS {
 		Query query = getQuery(idQuery);
 		query.setName(nombreQuery);
 		query.setConsulta(consulta);
-		
+
 		try {
 
 			Class.forName("org.sqlite.JDBC");
@@ -347,7 +348,7 @@ public class FS {
 			String sql = "SELECT CONSULTA FROM QUERYS WHERE NAME = '" + nombreDir + "'";
 			System.out.println(sql);
 			ResultSet rs = stat.executeQuery(sql);
-			sql = rs.getString("consulta"); 
+			sql = "SELECT NAME FROM FILES WHERE " + rs.getString("consulta");
 			System.out.println(sql);
 			rs = stat.executeQuery(sql);
 			int i = 0;
@@ -363,15 +364,41 @@ public class FS {
 		return forDir;
 	}
 
-	public void cd(String string) {
-		// TODO Auto-generated method stub
-		
+	public String[] multiDir(String[] nombreDir) {
+//		int idDir = getQueryId(nombreDir);
+//		Dir dir = getDir(idDir);
+		for (int i = 0; i < forDir.length; i++) {
+			forDir[i] = "";
+		}
+		try {
+			String filtro = "";
+			for (int i = 0; i < nombreDir.length; i++) {
+				String sql1 = "SELECT CONSULTA FROM QUERYS WHERE NAME = '" + nombreDir[i] + "'";
+				System.out.println(sql1);
+				ResultSet rs = stat.executeQuery(sql1);
+				filtro += rs.getString("consulta") + " AND ";
+			}
+
+			String sql = "SELECT NAME FROM FILES WHERE " + filtro.substring(0, filtro.length() - 5);
+			System.out.println(sql);
+			ResultSet rs = stat.executeQuery(sql);
+			int i = 0;
+			while(rs.next()) {
+				forDir[i] = rs.getString("name");
+				i++;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return forDir;
 	}
-	
+
 	public int alocarContenido(byte[] contenido, int largo) {
 		// FIRST FIT
 		int i = 0;
-		int desdePos = 0;		
+		int desdePos = 0;
 		while (i < largo) {
 			if (desdePos >= byteOcupado.length)
 				return 1;
@@ -379,30 +406,30 @@ public class FS {
 				desdePos +=i+1;
 				i = 0;
 			} else {
-				i++;				
-			}				
-		}		
+				i++;
+			}
+		}
 		//entra desdePos
 		driver.setBytes(desdePos, largo, contenido);
 		for (int j = 0; j < largo; j++) {
 			byteOcupado[desdePos+j] = true;
 		}
-		String sql = "UPDATE BUSY SET BUSY = 1 WHERE ID <= " + desdePos + " AND ID < " + desdePos + largo;
+		String sql = "UPDATE BUSY SET BUSY = 1 WHERE POSITION <= " + desdePos + " AND POSITION < " + desdePos + largo;
 		System.out.println(sql);
 		try {
 			stat.execute(sql);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}
 		return 0;
 	}
-	
+
 	public void desalocarContenido(int desdePos, int largo) {
 		for (int j = 0; j < largo; j++) {
 			byteOcupado[desdePos+j] = false;
 		}
-		String sql = "UPDATE BUSY SET BUSY = 0 WHERE ID <= " + desdePos + " AND ID < " + desdePos + largo;
+		String sql = "UPDATE BUSY SET BUSY = 0 WHERE POSITION <= " + desdePos + " AND POSITION < " + desdePos + largo;
 		System.out.println(sql);
 		try {
 			stat.execute(sql);
