@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 
 import filesystem.driver.HDDriver;
 import filesystem.entidades.Dir;
@@ -13,6 +14,7 @@ import filesystem.entidades.File;
 import filesystem.entidades.Permission;
 import filesystem.entidades.Query;
 import filesystem.entidades.User;
+import filesystem.exceptions.NoMorePlaceException;
 import filesystem.varios.TipoArchivo;
 
 public class FS {
@@ -128,10 +130,11 @@ public class FS {
 		Connection conn = DriverManager.getConnection("jdbc:sqlite:test.db");
 		Statement stat = conn.createStatement();
 
-		String sql = "INSERT INTO FILES (IDDIR, NAME, TIPO) VALUES( " +
+		String sql = "INSERT INTO FILES (IDDIR, NAME, TIPO, CREATED) VALUES ( " +
 			file.getIdDir() + ", " +
 			"'" + file.getName() + "', " +
-			file.getTipo().ordinal() + ")";
+			file.getTipo().ordinal() + ", " + 
+			"DATE(\"now\") )";
 		System.out.println(sql);
 		stat.execute(sql);
 		ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM FILES");
@@ -174,13 +177,14 @@ public class FS {
 	public void addFileToDir(String nombreArchivo, String nombreDir) {
 		int idDir = getQueryId(nombreDir);
 		int idFile = getFileId(nombreArchivo);
-		getFile(idFile).setIdDir(idDir);
-		updateFile(idFile);
+		File file = getFile(idFile);
+		file.setIdDir(idDir);
+		updateFile(idFile, file.getContenido(), file.getLargo());
 	}
 
 	// METODOS PRIVADOS
 
-	private void updateFile(int idFile) {
+	public synchronized void updateFile(int idFile, byte[] contenido, int largo) {
 		File file = getFile(idFile);
 
 		try {
@@ -189,13 +193,21 @@ public class FS {
 			String sql = "UPDATE files SET " +
 				"idDir = " + file.getIdDir() + ", " +
 				"name = '" + file.getName() + "', " +
-				"tipo = " + file.getTipo().ordinal() +
+				"tipo = " + file.getTipo().ordinal() + ", " + 
+				"mod = DATE(\"now\")" +
 				" WHERE id = " + file.getId();
+			
+			desalocarContenido(file.getInit(), file.getLargo());
+			
+			file.setContenido(contenido);
+			file.setLargo(largo);
+				
+			int init = alocarContenido(file.getContenido(), file.getLargo());
+			file.setInit(init);
+			
 			System.out.println(sql);
-
 			stat.execute(sql);
-
-
+			
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -307,13 +319,20 @@ public class FS {
 			i = getIdentificadorFile();
 			// Si no hay lugar... desalojo a alguno
 			if (i==-1) {
-				i = unAlocateFile();
+				i = desalojarFile();
 			}
-			files[i].setId(rs.getInt("id"));
-			files[i].setIdDir(rs.getInt("idDir"));
-			files[i].setName(rs.getString("name"));
-			files[i].setTipo(TipoArchivo.values()[rs.getInt("tipo")]);
+			File file = files[i];
+			file.setId(rs.getInt("id"));
+			file.setIdDir(rs.getInt("idDir"));
+			file.setName(rs.getString("name"));
+			file.setTipo(TipoArchivo.values()[rs.getInt("tipo")]);
+			file.setInit(rs.getInt("init"));
+			file.setLargo(rs.getInt("length"));
+			
+			driver.getBytes(file.getInit(), file.getLargo(), file.getContenido());
+			
 			fileOcupado[i] = true;
+			
 			rs.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -323,24 +342,26 @@ public class FS {
 		return i;
 	}
 
-	private int unAlocateFile() {
+	private int desalojarFile() {
 		int idFile = 0;
-		// Desalojo todos los archivos
+		Date masAntiguo = files[0].getModificated();
+		// Desalojo el archivo mas antiguo
 		for (int j = 0; j < files.length; j++) {
-			files[j].setId(-1);
-			files[j].setName("");
-			files[j].setTipo(TipoArchivo.datos);
-			for (int i = 0; i < files[0].getContenido().length; i++) {
-				files[j].getContenido()[i] = 0;
+			if (masAntiguo.after(files[j].getModificated())) { 
+				idFile = j;
+				masAntiguo = files[j].getModificated();
 			}
-			fileOcupado[j] = false;
 		}
+		files[idFile].setId(-1);
+		files[idFile].setName("");
+		files[idFile].setTipo(TipoArchivo.datos);
+		fileOcupado[idFile] = false;
+
 		return idFile;
 	}
 
 	public String[] dir(String nombreDir) {
-//		int idDir = getQueryId(nombreDir);
-//		Dir dir = getDir(idDir);
+
 		for (int i = 0; i < forDir.length; i++) {
 			forDir[i] = "";
 		}
@@ -365,8 +386,7 @@ public class FS {
 	}
 
 	public String[] multiDir(String[] nombreDir) {
-//		int idDir = getQueryId(nombreDir);
-//		Dir dir = getDir(idDir);
+
 		for (int i = 0; i < forDir.length; i++) {
 			forDir[i] = "";
 		}
@@ -399,30 +419,34 @@ public class FS {
 		// FIRST FIT
 		int i = 0;
 		int desdePos = 0;
-		while (i < largo) {
-			if (desdePos >= byteOcupado.length)
-				return 1;
-			if (byteOcupado[desdePos+i]) {
-				desdePos +=i+1;
-				i = 0;
-			} else {
-				i++;
-			}
-		}
-		//entra desdePos
-		driver.setBytes(desdePos, largo, contenido);
-		for (int j = 0; j < largo; j++) {
-			byteOcupado[desdePos+j] = true;
-		}
-		String sql = "UPDATE BUSY SET BUSY = 1 WHERE POSITION <= " + desdePos + " AND POSITION < " + desdePos + largo;
-		System.out.println(sql);
 		try {
+			while (i < largo) {
+				if (desdePos >= byteOcupado.length)
+					throw new NoMorePlaceException();
+				if (byteOcupado[desdePos+i]) {
+					desdePos +=i+1;
+					i = 0;
+				} else {
+					i++;
+				}
+			}
+			//entra desdePos
+			driver.setBytes(desdePos, largo, contenido);
+			for (int j = 0; j < largo; j++) {
+				byteOcupado[desdePos+j] = true;
+			}
+			String sql = "UPDATE BUSY SET BUSY = 1 WHERE POSITION <= " + desdePos + " AND POSITION < " + desdePos + largo;
+			System.out.println(sql);
+		
 			stat.execute(sql);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (NoMorePlaceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return 0;
+		return desdePos;
 	}
 
 	public void desalocarContenido(int desdePos, int largo) {
