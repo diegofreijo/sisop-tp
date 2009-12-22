@@ -12,8 +12,10 @@ public class Pruebas {
 		FS fs;
 		try {
 			fs = new FS();
+			
+			fs.su("");
 
-			byte[] contenido = fs.open("arch1.txt");
+			//byte[] contenido = fs.open("arch1.txt");
 
 //			fs.mkDir("directorio");
 //

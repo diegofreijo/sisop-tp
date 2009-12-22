@@ -24,7 +24,17 @@ public class FS {
 	private File[] files	= new File[5];
 	private Dir[] querys 	= new Dir[5];
 	private User[] usuarios = new User[5];
-	private Permission[] permisos = new Permission[10];
+	private Permission[] permisos = new Permission[25];
+	
+	private User actualUser = new User();
+
+	public User getActualUser() {
+		return actualUser;
+	}
+
+	public void setActualUser(User actualUser) {
+		this.actualUser = actualUser;
+	}
 
 	private String[] forDir = new String[10];
 
@@ -94,6 +104,11 @@ public class FS {
 	public Query getQuery(int i) {
 		return querys[i];
 	}
+	
+	private User getUser(int i) {
+		return usuarios[i];
+	}
+
 
 	public int getIdentificadorFile() {
 		return getIdentificadorArray(fileOcupado);
@@ -269,11 +284,11 @@ public class FS {
 		return ret;
 	}
 
-	public void mkDir(String Dir) {
+	public void mkDir(String nombreDir) {
 		int idDir = getIdentificadorQuery();
 		Dir dir = getDir(idDir);
 		dir.setId(idDir);
-		dir.setName(Dir);
+		dir.setName(nombreDir);
 
 		try {
 
@@ -461,6 +476,44 @@ public class FS {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void su(String string) {
+				
+	}
+	
+	public void mkUser(String nombreUser) {
+		int idUser = getIdentificadorUser();
+		User user = getUser(idUser);
+		user.setId(idUser);
+		user.setName(nombreUser);
+
+		try {
+
+			Class.forName("org.sqlite.JDBC");
+
+			String sql = "INSERT INTO QUERYS (NAME, CONSULTA) VALUES ( " +
+				"'" + dir.getName() + "', " +
+				"'" + dir.getConsulta() + "')";
+			System.out.println(sql);
+
+			stat.execute(sql);
+			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
+			dir.setId(rs.getInt(1));
+
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+	private int getIdentificadorUser() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
 
