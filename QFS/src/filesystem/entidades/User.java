@@ -3,9 +3,9 @@ package filesystem.entidades;
 import filesystem.varios.Util;
 
 public class User extends FSElement  {
-	
-	private String pass;
-	
+
+	public String pass;
+
 	public User() {
 		super(-1, "");
 	}
@@ -22,5 +22,7 @@ public class User extends FSElement  {
 	public void setPass(String pass) {
 		this.pass = Util.encript(pass);
 	}
+
+
 
 }
