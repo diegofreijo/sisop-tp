@@ -15,6 +15,7 @@ import filesystem.entidades.Permission;
 import filesystem.entidades.Query;
 import filesystem.entidades.User;
 import filesystem.exceptions.NoMorePlaceException;
+import filesystem.varios.PermissionLevel;
 import filesystem.varios.TipoArchivo;
 
 public class FS {
@@ -25,32 +26,21 @@ public class FS {
 	private Dir[] querys 	= new Dir[5];
 	private User[] usuarios = new User[5];
 	private Permission[] permisos = new Permission[25];
-	
-	private User actualUser = new User();
-
-	public User getActualUser() {
-		return actualUser;
-	}
-
-	public void setActualUser(User actualUser) {
-		this.actualUser = actualUser;
-	}
-
-	private String[] forDir = new String[10];
-
-	public String[] getForDir() {
-		return forDir;
-	}
-
-	public void setForDir(String[] forDir) {
-		this.forDir = forDir;
-	}
 
 	private boolean[] fileOcupado		= new boolean[5];
 	private boolean[] queryOcupado		= new boolean[5];
 	private boolean[] usuarioOcupado	= new boolean[5];
 	private boolean[] permisoOcupado	= new boolean[10];
+
+	private User actualUser = new User();
+
+	private String[] forDir = new String[10];
+
 	private boolean[] byteOcupado		= new boolean[64000];
+
+	private Connection conn;
+	private Statement stat;
+
 
 	public boolean[] getByteOcupado() {
 		return byteOcupado;
@@ -60,12 +50,28 @@ public class FS {
 		this.byteOcupado = byteOcupado;
 	}
 
-	private Connection conn;
-	private Statement stat;
 
-	// METODOS PUBLICOS
+	public String[] getForDir() {
+		return forDir;
+	}
 
-	public FS () throws ClassNotFoundException, SQLException {
+	public void setForDir(String[] forDir) {
+		this.forDir = forDir;
+	}
+
+	public User getActualUser() {
+		return actualUser;
+	}
+
+	public void setActualUser(User actualUser) {
+		this.actualUser = actualUser;
+	}
+
+
+	/////////////////////////// METODOS PUBLICOS ////////////////////////////
+
+	public FS() throws ClassNotFoundException, SQLException {
+
 		for(int i = 0; i < files.length; i++) {
 			files[i]	= new File();
 			fileOcupado[i]	= true;
@@ -93,31 +99,51 @@ public class FS {
 			int ocupado = rs.getInt("BUSY");
 			byteOcupado[i] = (ocupado == 1)?true:false;
 		}
-
-
 	}
 
-	public File getFile(int i) {
+	private File getFile(int i) {
 		return files[i];
 	}
 
-	public Query getQuery(int i) {
+	private Query getQuery(int i) {
 		return querys[i];
 	}
-	
+
+	private Dir getDir(int i) {
+		return querys[i];
+	}
+
 	private User getUser(int i) {
 		return usuarios[i];
 	}
 
+	private Permission getPermission(int i) {
+		return permisos[i];
+	}
 
-	public int getIdentificadorFile() {
+	/**
+	 * Getters de identificadores
+	 */
+	private int getIdentificadorFile() {
 		return getIdentificadorArray(fileOcupado);
 	}
 
-	public int getIdentificadorQuery() {
+	private int getIdentificadorQuery() {
 		return getIdentificadorArray(queryOcupado);
 	}
 
+	private int getIdentificadorUser() {
+		return getIdentificadorArray(usuarioOcupado);
+	}
+
+	private int getIdentificadorPermission() {
+		return getIdentificadorArray(permisoOcupado);
+	}
+
+
+	/**
+	 * Eliminadores
+	 */
 	public void eliminarFile(int id) {
 		eliminarDato(fileOcupado, id);
 	}
@@ -126,6 +152,17 @@ public class FS {
 		eliminarDato(queryOcupado, id);
 	}
 
+	public void eliminarUser(int id) {
+		eliminarDato(usuarioOcupado, id);
+	}
+
+	public void eliminarPermiso(int id) {
+		eliminarDato(permisoOcupado, id);
+	}
+
+	/**
+	 * Encuentra un lugar libre para alojar
+	 */
 	public int getFileId(String nombre) {
 		return getElementoId(files, fileOcupado, nombre);
 	}
@@ -134,6 +171,17 @@ public class FS {
 		return getElementoId(querys, queryOcupado, nombre);
 	}
 
+	public int getUserId(String nombre) {
+		return getElementoId(usuarios, usuarioOcupado, nombre);
+	}
+
+	public int getPermissionId(String nombre) {
+		return getElementoId(permisos, permisoOcupado, nombre);
+	}
+
+	/**
+	 * Modificadores de Files
+	 */
 	public void newFile(String nombreArchivo, TipoArchivo tipo) throws ClassNotFoundException, SQLException {
 
 		int idFile = getIdentificadorFile();
@@ -141,14 +189,10 @@ public class FS {
 		file.setName(nombreArchivo);
 		file.setTipo(tipo);
 
-		Class.forName("org.sqlite.JDBC");
-		Connection conn = DriverManager.getConnection("jdbc:sqlite:test.db");
-		Statement stat = conn.createStatement();
-
 		String sql = "INSERT INTO FILES (IDDIR, NAME, TIPO, CREATED) VALUES ( " +
 			file.getIdDir() + ", " +
 			"'" + file.getName() + "', " +
-			file.getTipo().ordinal() + ", " + 
+			file.getTipo().ordinal() + ", " +
 			"DATE(\"now\") )";
 		System.out.println(sql);
 		stat.execute(sql);
@@ -157,6 +201,48 @@ public class FS {
 		conn.close();
 	}
 
+	public synchronized void updateFile(int idFile, byte[] contenido, int largo) {
+		File file = getFile(idFile);
+
+		try {
+
+			String sql = "UPDATE files SET " +
+				"idDir = " + file.getIdDir() + ", " +
+				"name = '" + file.getName() + "', " +
+				"tipo = " + file.getTipo().ordinal() + ", " +
+				"mod = DATE(\"now\")" +
+				" WHERE id = " + file.getId();
+
+			desalocarContenido(file.getInit(), file.getLargo());
+
+			file.setContenido(contenido);
+			file.setLargo(largo);
+
+			int init = alocarContenido(file.getContenido(), file.getLargo());
+			file.setInit(init);
+
+			System.out.println(sql);
+			stat.execute(sql);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public byte[] open(String name) {
+		int idFile = getFileId(name);
+		// Si no esta cargado
+		if (idFile == -1) {
+			idFile = loadFile(name);
+		}
+		return getFile(idFile).getContenido();
+	}
+
+	/**
+	 * Modificadores de Querys y Dirs
+	 */
 	public void mkQuery(String nombreQuery, String consulta) {
 		int idQuery = getIdentificadorQuery();
 		Query query = getQuery(idQuery);
@@ -164,8 +250,6 @@ public class FS {
 		query.setConsulta(consulta);
 
 		try {
-
-			Class.forName("org.sqlite.JDBC");
 
 			String sql = "INSERT INTO QUERYS (NAME, CONSULTA) VALUES ( " +
 				"'" + query.getName() + "', " +
@@ -176,17 +260,72 @@ public class FS {
 			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
 			query.setId(rs.getInt(1));
 
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public String toString() {
-		return driver.toString();
+	public void mkDir(String nombreDir) {
+		int idDir = getIdentificadorQuery();
+		Dir dir = getDir(idDir);
+		dir.setId(idDir);
+		dir.setName(nombreDir);
+
+		try {
+
+			String sql = "INSERT INTO QUERYS (NAME, CONSULTA) VALUES ( " +
+				"'" + dir.getName() + "', " +
+				"'" + dir.getConsulta() + "')";
+			System.out.println(sql);
+
+			stat.execute(sql);
+			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
+			dir.setId(rs.getInt(1));
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void deleteQuery(String name) {
+
+		int id = getQuery(getQueryId(name)).getId();
+
+		try {
+
+			// Borro el query
+			String sql = "DELETE FROM QUERYS WHERE ID = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public void deleteDir(String name) {
+
+		int id = getDir(getQueryId(name)).getId();
+
+		try {
+
+			// Borro query
+			String sql = "DELETE FROM QUERYS WHERE ID = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+			// Borro la referencia de los archivos a ese directorio
+			sql = "UPDATE FILES SET IDDIR = -1 WHERE IDDIR = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	public void addFileToDir(String nombreArchivo, String nombreDir) {
@@ -197,41 +336,111 @@ public class FS {
 		updateFile(idFile, file.getContenido(), file.getLargo());
 	}
 
-	// METODOS PRIVADOS
+	/**
+	 * Modificadores de User
+	 */
+	public void mkUser(String nombreUser, String pass) {
+		int idUser = getIdentificadorUser();
+		User user = getUser(idUser);
 
-	public synchronized void updateFile(int idFile, byte[] contenido, int largo) {
-		File file = getFile(idFile);
+		user.setName(nombreUser);
+		user.setPass(pass);
 
 		try {
+
 			Class.forName("org.sqlite.JDBC");
 
-			String sql = "UPDATE files SET " +
-				"idDir = " + file.getIdDir() + ", " +
-				"name = '" + file.getName() + "', " +
-				"tipo = " + file.getTipo().ordinal() + ", " + 
-				"mod = DATE(\"now\")" +
-				" WHERE id = " + file.getId();
-			
-			desalocarContenido(file.getInit(), file.getLargo());
-			
-			file.setContenido(contenido);
-			file.setLargo(largo);
-				
-			int init = alocarContenido(file.getContenido(), file.getLargo());
-			file.setInit(init);
-			
+			String sql = "INSERT INTO USERS (NAME, PASS) VALUES ( " +
+				"'" + user.getName() + "', " +
+				"'" + user.pass + "')";
 			System.out.println(sql);
+
 			stat.execute(sql);
-			
+			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM USERS");
+			user.setId(rs.getInt(1));
+
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public void deleteUser(String name) {
+
+		int id = getUser(getUserId(name)).getId();
+
+		try {
+
+			// Borro usuario
+			String sql = "DELETE FROM USERS WHERE ID = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+			// Borro la referencia de los archivos a ese directorio
+			sql = "DELETE FROM PERMISSIONS WHERE IDUSER = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Modificadores de Permisos
+	 */
+	public void addPermission(String nombreArchivo, String nombreUsuario, PermissionLevel permiso) {
+		int idFile = getFileId(nombreArchivo);
+		int idUser = getUserId(nombreUsuario);
+		int idPerm = getIdentificadorPermission();
+		Permission perm = getPermission(idPerm);
+		perm.setArchivo(getFile(idFile));
+		perm.setUsuario(getUser(idUser));
+		perm.setPermiso(permiso);
+
+		try {
+
+			Class.forName("org.sqlite.JDBC");
+
+			String sql = "INSERT INTO PERMISSIONS (IDFILE, IDUSER, PERMISO) VALUES ( " +
+			perm.getArchivo().getId() + ", " +
+			perm.getUsuario().getId() + ", " +
+			permiso.ordinal();
+
+			System.out.println(sql);
+			stat.execute(sql);
+			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM PERMISSIONS");
+			perm.setId(rs.getInt(1));
+
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
 	}
+
+	public void deletePermission(String name) {
+
+		int id = getPermission(getPermissionId(name)).getId();
+
+		try {
+
+			// Borro usuario
+			String sql = "DELETE FROM USERS WHERE ID = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+			// Borro la referencia de los archivos a ese directorio
+			sql = "DELETE FROM PERMISSIONS WHERE IDUSER = " + id;
+			System.out.println(sql);
+			stat.execute(sql);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	///////////////////////////// METODOS PRIVADOS /////////////////////////////
 
 	/**
 	 * Retorna la proxima posicion libre del array de objetos.
@@ -284,47 +493,6 @@ public class FS {
 		return ret;
 	}
 
-	public void mkDir(String nombreDir) {
-		int idDir = getIdentificadorQuery();
-		Dir dir = getDir(idDir);
-		dir.setId(idDir);
-		dir.setName(nombreDir);
-
-		try {
-
-			Class.forName("org.sqlite.JDBC");
-
-			String sql = "INSERT INTO QUERYS (NAME, CONSULTA) VALUES ( " +
-				"'" + dir.getName() + "', " +
-				"'" + dir.getConsulta() + "')";
-			System.out.println(sql);
-
-			stat.execute(sql);
-			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
-			dir.setId(rs.getInt(1));
-
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	private Dir getDir(int i) {
-		return querys[i];
-	}
-
-	public byte[] open(String name) {
-		int idFile = getFileId(name);
-		// Si no esta cargado
-		if (idFile == -1) {
-			idFile = loadFile(name);
-		}
-		return getFile(idFile).getContenido();
-	}
-
 	private int loadFile(String name) {
 
 		int i = -1;
@@ -343,11 +511,11 @@ public class FS {
 			file.setTipo(TipoArchivo.values()[rs.getInt("tipo")]);
 			file.setInit(rs.getInt("init"));
 			file.setLargo(rs.getInt("length"));
-			
+
 			driver.getBytes(file.getInit(), file.getLargo(), file.getContenido());
-			
+
 			fileOcupado[i] = true;
-			
+
 			rs.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -362,7 +530,7 @@ public class FS {
 		Date masAntiguo = files[0].getModificated();
 		// Desalojo el archivo mas antiguo
 		for (int j = 0; j < files.length; j++) {
-			if (masAntiguo.after(files[j].getModificated())) { 
+			if (masAntiguo.after(files[j].getModificated())) {
 				idFile = j;
 				masAntiguo = files[j].getModificated();
 			}
@@ -381,10 +549,19 @@ public class FS {
 			forDir[i] = "";
 		}
 		try {
-			String sql = "SELECT CONSULTA FROM QUERYS WHERE NAME = '" + nombreDir + "'";
+			String sql = "";
+			sql = "SELECT CONSULTA FROM QUERYS WHERE NAME = '" + nombreDir + "'";
 			System.out.println(sql);
 			ResultSet rs = stat.executeQuery(sql);
-			sql = "SELECT NAME FROM FILES WHERE " + rs.getString("consulta");
+
+			// FILTRO LCU
+			if (this.actualUser.getId() ==	-1)
+				sql = "SELECT NAME FROM FILES WHERE " + rs.getString("consulta");
+			else
+				sql = "SELECT FILES.NAME FROM FILES, PERMISSIONS WHERE FILES.ID = PERMISSIONS.IDFILE " +
+						" AND PERMISSIONS.IDUSER = " + actualUser.getId() +
+						" AND " + rs.getString("consulta");
+
 			System.out.println(sql);
 			rs = stat.executeQuery(sql);
 			int i = 0;
@@ -414,7 +591,15 @@ public class FS {
 				filtro += rs.getString("consulta") + " AND ";
 			}
 
-			String sql = "SELECT NAME FROM FILES WHERE " + filtro.substring(0, filtro.length() - 5);
+			// FILTRO LCU
+			String sql = "";
+			if (this.actualUser.getId() ==	-1)
+				sql = "SELECT NAME FROM FILES WHERE " + filtro.substring(0, filtro.length() - 5);
+			else
+				sql = "SELECT FILES.NAME FROM FILES, PERMISSIONS WHERE FILES.ID = PERMISSIONS.IDFILE " +
+						" AND PERMISSIONS.IDUSER = " + actualUser.getId() +
+						" AND " + filtro.substring(0, filtro.length() - 5);
+
 			System.out.println(sql);
 			ResultSet rs = stat.executeQuery(sql);
 			int i = 0;
@@ -430,7 +615,7 @@ public class FS {
 		return forDir;
 	}
 
-	public int alocarContenido(byte[] contenido, int largo) {
+	private int alocarContenido(byte[] contenido, int largo) {
 		// FIRST FIT
 		int i = 0;
 		int desdePos = 0;
@@ -452,7 +637,7 @@ public class FS {
 			}
 			String sql = "UPDATE BUSY SET BUSY = 1 WHERE POSITION <= " + desdePos + " AND POSITION < " + desdePos + largo;
 			System.out.println(sql);
-		
+
 			stat.execute(sql);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -464,7 +649,7 @@ public class FS {
 		return desdePos;
 	}
 
-	public void desalocarContenido(int desdePos, int largo) {
+	private void desalocarContenido(int desdePos, int largo) {
 		for (int j = 0; j < largo; j++) {
 			byteOcupado[desdePos+j] = false;
 		}
@@ -479,43 +664,13 @@ public class FS {
 	}
 
 	public void su(String string) {
-				
-	}
-	
-	public void mkUser(String nombreUser) {
-		int idUser = getIdentificadorUser();
-		User user = getUser(idUser);
-		user.setId(idUser);
-		user.setName(nombreUser);
 
-		try {
-
-			Class.forName("org.sqlite.JDBC");
-
-			String sql = "INSERT INTO QUERYS (NAME, CONSULTA) VALUES ( " +
-				"'" + dir.getName() + "', " +
-				"'" + dir.getConsulta() + "')";
-			System.out.println(sql);
-
-			stat.execute(sql);
-			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
-			dir.setId(rs.getInt(1));
-
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 
-	private int getIdentificadorUser() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+
 }
+
 
 
 
