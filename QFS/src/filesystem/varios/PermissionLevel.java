@@ -1,7 +1,7 @@
 package filesystem.varios;
 
 public enum PermissionLevel {
-	NONE,
+	VISTA,
 	LECTURA,
 	LECTURA_ESCRITURA,
 	EJECUCION,

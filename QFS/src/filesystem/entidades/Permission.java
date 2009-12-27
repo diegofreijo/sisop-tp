@@ -12,7 +12,7 @@ public class Permission extends FSElement {
 		super(-1,"");
 		this.usuario = null;
 		this.archivo = null;
-		this.permiso = PermissionLevel.NONE;
+		this.permiso = PermissionLevel.VISTA;
 	}
 
 	public Permission(User usuario, File archivo, PermissionLevel permiso) {
