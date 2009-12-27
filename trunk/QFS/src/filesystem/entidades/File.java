@@ -11,7 +11,6 @@ public class File extends FSElement {
 	public File() {
 		super(-1, "");
 		tipo = TipoArchivo.datos;
-		contenido = new byte[100];
 		largo = 0;
 		idDir = -1;
 		init = 0;
