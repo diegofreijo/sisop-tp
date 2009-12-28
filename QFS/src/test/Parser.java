@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import filesystem.estructura.FS;
 import filesystem.exceptions.ElementDoesNotExistsException;
 import filesystem.exceptions.ExistingFileException;
+import filesystem.varios.PermissionLevel;
 import filesystem.varios.TipoArchivo;
 
 public class Parser {
@@ -85,6 +86,18 @@ public class Parser {
 							break;
 						System.out.println(lista[i]);
 					}
+				} else if (array[0].equals("mkUser")) {
+					fs.mkUser(array[1], array[2]);
+				} else if (array[0].equals("deleteUser")) {
+					fs.deleteUser(array[1]);
+				} else if (array[0].equals("addPermission")) {
+					fs.addPermission(array[1],array[2], PermissionLevel.values()[Integer.parseInt(array[3])]);
+				} else if (array[0].equals("deletePermission")) {
+					fs.deletePermission(array[1],array[2]);					
+				} else if (array[0].equals("su")) {
+					fs.su(array[1], array[2]);
+				} else if (array[0].equals("root")) {
+					fs.root();					
 				} else if (array[0].equals("exit")) {
 					break;
 				} else {
