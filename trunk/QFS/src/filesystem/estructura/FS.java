@@ -351,10 +351,14 @@ public class FS {
 				"'" + dir.getName() + "', " +
 				"'" + dir.getConsulta() + "')";
 			System.out.println(sql);
-
 			stat.execute(sql);
 			ResultSet rs = stat.executeQuery("SELECT MAX(ID) FROM QUERYS");
 			dir.setId(rs.getInt(1));
+			
+			sql = "UPDATE QUERYS SET CONSULTA = 'IDDIR = " + dir.getId() + "' WHERE ID = " + dir.getId();
+			System.out.println(sql);
+			stat.execute(sql);
+			
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
