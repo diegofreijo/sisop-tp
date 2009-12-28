@@ -39,30 +39,12 @@ public class FS {
 
 	private User actualUser = new User();
 
-	private String[] forDir = new String[10];
+	private String[] forDir = new String[20];
 
 	private boolean[] byteOcupado		= new boolean[64000];
 
 	private Connection conn;
 	private Statement stat;
-
-
-	public boolean[] getByteOcupado() {
-		return byteOcupado;
-	}
-
-	public void setByteOcupado(boolean[] byteOcupado) {
-		this.byteOcupado = byteOcupado;
-	}
-
-
-	public String[] getForDir() {
-		return forDir;
-	}
-
-	public void setForDir(String[] forDir) {
-		this.forDir = forDir;
-	}
 
 	public User getActualUser() {
 		return actualUser;
@@ -93,7 +75,7 @@ public class FS {
 		}
 
 		Class.forName("org.sqlite.JDBC");
-		conn = DriverManager.getConnection("jdbc:sqlite:test.db");
+		conn = DriverManager.getConnection("jdbc:sqlite:base.db");
 		stat = conn.createStatement();
 
 		ResultSet rs = stat.executeQuery("SELECT POSITION, BUSY FROM BUSY");
@@ -264,12 +246,36 @@ public class FS {
 	}
 
 	public byte[] open(String name) throws ElementDoesNotExistsException {
-		int idFile = getFileId(name);
-		// Si no esta cargado
-		if (idFile == -1)
-			idFile = loadFile(name);
 
-		return getFile(idFile).getContenido();
+		try {
+			int idFile = getFileId(name);
+			// Si no esta cargado
+			if (idFile == -1)
+				idFile = loadFile(name);
+
+			File file = getFile(idFile);
+
+			if (this.actualUser.getId() !=	-1) {
+				String sql = "SELECT PERMISO FROM PERMISSIONS WHERE IDFILE = " + file.getId();
+				System.out.println(sql);
+				ResultSet rs = stat.executeQuery(sql);
+				if (!rs.next()) {
+					System.err.println("No tiene permiso");
+					return null;
+				}
+				PermissionLevel permiso = PermissionLevel.values()[rs.getInt("permiso")];
+				if (permiso == PermissionLevel.VISTA) {
+					System.err.println("No tiene permiso");
+					return null;
+				}
+			}
+			return file.getContenido();
+		} catch (SQLException e) {
+			// TODO: handle exception
+		}
+
+		return null;
+
 	}
 
 	public void deleteFile(String name) throws ElementDoesNotExistsException {
@@ -703,7 +709,7 @@ public class FS {
 		files[idFile].setId(-1);
 		files[idFile].setName("");
 		files[idFile].setTipo(TipoArchivo.datos);
-		fileOcupado[idFile] = false;
+		eliminarFile(idFile);
 
 		return idFile;
 	}
@@ -715,7 +721,7 @@ public class FS {
 		querys[i].setId(-1);
 		querys[i].setName("");
 		querys[i].setConsulta("");
-		queryOcupado[i] = false;
+		eliminarQuery(i);
 		return i;
 	}
 
@@ -726,7 +732,7 @@ public class FS {
 		usuarios[i].setId(-1);
 		usuarios[i].setName("");
 		usuarios[i].pass = "";
-		usuarioOcupado[i] = false;
+		eliminarUser(i);
 		return i;
 	}
 
@@ -801,6 +807,30 @@ public class FS {
 		return forDir;
 	}
 
+	public String[] querys()  {
+
+		for (int i = 0; i < forDir.length; i++) {
+			forDir[i] = "";
+		}
+		try {
+			String sql = "";
+			sql = "SELECT NAME FROM QUERYS";
+			System.out.println(sql);
+			ResultSet rs = stat.executeQuery(sql);
+			int i = 0;
+			while(rs.next()) {
+				forDir[i] = rs.getString("name");
+				i++;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return forDir;
+
+	}
+
 	private int alocarContenido(byte[] contenido, int largo) {
 		// FIRST FIT
 		int i = 0;
@@ -866,6 +896,12 @@ public class FS {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void root() {
+		actualUser.setId(-1);
+		actualUser.setName("");
+		actualUser.pass = "";
 	}
 }
 

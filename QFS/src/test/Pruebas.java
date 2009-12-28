@@ -26,12 +26,12 @@ public class Pruebas {
 			////fs.deletePermission("archivonuevo.exe", "Nacho");
 			//fs.su("Nacho","pass");
 
-			byte imagen[] = fs.open("arc");
+			//byte imagen[] = fs.open("arc");
 			//fs.updateFile("archivonuevo.exe", imagen, imagen.length);
-//			String array[] = fs.dir("Ayer");
-//			for (int i = 0; i < array.length; i++) {
-//				System.out.println(array[i]);
-//			}
+			String array[] = fs.querys();
+			for (int i = 0; i < array.length; i++) {
+				System.out.println(array[i]);
+			}
 
 			//fs.mkUser("Nacho", "pass");
 
@@ -128,8 +128,8 @@ public class Pruebas {
 			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
-		} catch (ElementDoesNotExistsException e) {
-			e.printStackTrace();
+//		} catch (ElementDoesNotExistsException e) {
+//			e.printStackTrace();
 //		} catch (FileNotFoundException e) {
 //			e.printStackTrace();
 //		} catch (IOException e) {
