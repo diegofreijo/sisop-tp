@@ -2,21 +2,19 @@ package filesystem.entidades;
 
 import filesystem.varios.PermissionLevel;
 
-public class Permission extends FSElement {
+public class Permission {
 
 	private User usuario;
 	private File archivo;
 	private PermissionLevel permiso;
 
 	public Permission() {
-		super(-1,"");
 		this.usuario = null;
 		this.archivo = null;
 		this.permiso = PermissionLevel.VISTA;
 	}
 
 	public Permission(User usuario, File archivo, PermissionLevel permiso) {
-		super(-1,"");
 		this.usuario = usuario;
 		this.archivo = archivo;
 		this.permiso = permiso;
