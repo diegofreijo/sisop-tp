@@ -24,15 +24,16 @@ public class Parser {
 		try {
 			fs = new FS();
 		} catch (ClassNotFoundException e1) {
+			e1.printStackTrace();
 			return;
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
+			e1.printStackTrace();
 			return;
 		}
 
 		while(true) {
 		try {
-
+				System.out.print(":");
 				String line = dis.readLine();
 				String array[] = line.split(" ");
 
@@ -93,11 +94,11 @@ public class Parser {
 				} else if (array[0].equals("addPermission")) {
 					fs.addPermission(array[1],array[2], PermissionLevel.values()[Integer.parseInt(array[3])]);
 				} else if (array[0].equals("deletePermission")) {
-					fs.deletePermission(array[1],array[2]);					
+					fs.deletePermission(array[1],array[2]);
 				} else if (array[0].equals("su")) {
 					fs.su(array[1], array[2]);
 				} else if (array[0].equals("root")) {
-					fs.root();					
+					fs.root();
 				} else if (array[0].equals("exit")) {
 					break;
 				} else {
@@ -105,23 +106,19 @@ public class Parser {
 				}
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error de ingreso de datos");
 			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Se esperaba un número");
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Clase no encontrada");
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error en conexion con base de datos");
 			} catch (ExistingFileException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Existe un file con el nombre ingresado");
 			} catch (ElementDoesNotExistsException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("No existe elemento con el nombre ingresado");
+			} catch (Exception e) {
+				System.err.println("Error, llamada incorrecta");
 			}
 		}
 
